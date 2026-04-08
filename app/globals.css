@@ -1,0 +1,21 @@
+:root {
+  --bg: #1a1210;
+  --bg-card: #231c18;
+  --bg-card-hover: #2d2420;
+  --terracotta: #c4704b;
+  --terracotta-light: #d4886a;
+  --cream: #f2e8de;
+  --cream-muted: #b8a99a;
+  --accent: #8b6f5e;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Figtree", system-ui, sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
