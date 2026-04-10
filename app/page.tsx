@@ -8,6 +8,7 @@ interface City{id:string;name:string;region:string;color:string;lat:number;lng:n
 interface Day{day:number;title:string;cityId:string;hotel:string;hotelUrl?:string;morning:string[];afternoon:string[];evening:string;schedule:{time:string;what:string;type?:string}[]}
 interface MustSee{id:string;title:string;desc:string;link?:string;img?:string;done:boolean}
 interface Todo{id:string;text:string;done:boolean}
+interface CustomPOI{id:string;name:string;cat:"cultuur"|"eten"|"tiktok"|"overig";cityId:string}
 interface DayPoi{id:string;day:number;name:string;desc:string;link?:string}
 
 const C:City[]=[
@@ -62,7 +63,11 @@ export default function Page(){
   const[tdTxt,setTdTxt]=useState("");
   const[showE,setShowE]=useState(false);
   const[mapQ,setMapQ]=useState("");const[ctab,setCtab]=useState<"do"|"eat"|"viral"|"move">("do");
-  const[showCities,setShowCities]=useState(false);const[dayPois,setDayPois]=useLS<DayPoi[]>("it-dp",[]);const[addPoi,setAddPoi]=useState(false);const[poiForm,setPoiForm]=useState({n:"",d:"",l:""});
+  const[showCities,setShowCities]=useState(false);
+  const[cpois,setCpois]=useLS<CustomPOI[]>("it-cpoi",[]);
+  const[addPoi,setAddPoi]=useState<string|null>(null);
+  const[poiName,setPoiName]=useState("");
+  const[poiCat,setPoiCat]=useState<"cultuur"|"eten"|"tiktok"|"overig">("cultuur");
   const city=cityId?C.find(c=>c.id===cityId):null;
   const openC=(id:string)=>{const c2=C.find(x=>x.id===id);setCityId(id);setView("city");setCtab("do");setShowCities(false);setMapQ(c2?c2.name+", Italy":"")};
   const inp:React.CSSProperties={background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"10px 12px",color:"var(--cream)",fontSize:14,fontFamily:"var(--sans)",outline:"none",width:"100%",boxSizing:"border-box"};
@@ -202,21 +207,33 @@ export default function Page(){
             <iframe style={{width:"100%",height:200,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${city.lat},${city.lng}&zoom=${city.zoom}&maptype=roadmap`} allowFullScreen />
           </div>
           <div style={{marginBottom:20}}>
-            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
-              <button onClick={()=>setMapQ(city.name+", Italy")} style={{padding:"4px 12px",borderRadius:6,border:mapQ===city.name+", Italy"?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.1)",background:mapQ===city.name+", Italy"?"rgba(196,112,75,0.15)":"var(--bg2)",color:mapQ===city.name+", Italy"?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>Overzicht</button>
-            </div>
-            <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginTop:10,marginBottom:6,textTransform:"uppercase"}}>Cultuur & Bezienswaardigheden</div>
-            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
-              {city.spots.map((p,i)=>(<button key={"s"+i} onClick={()=>setMapQ(p.name+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(p.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(p.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{p.name}</button>))}
-            </div>
-            <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginBottom:6,textTransform:"uppercase"}}>Eten & Drinken</div>
-            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
-              {city.restaurants.map((r,i)=>(<button key={"r"+i} onClick={()=>setMapQ(r.name+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(r.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(r.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(r.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{r.name}</button>))}
-            </div>
-            <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginBottom:6,textTransform:"uppercase"}}>TikTok Viral</div>
-            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-              {city.viral.map((v,i)=>(<button key={"v"+i} onClick={()=>setMapQ(v.name+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(v.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(v.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(v.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{v.name}</button>))}
-            </div>
+            <button onClick={()=>setMapQ(city.name+", Italy")} style={{padding:"4px 12px",borderRadius:6,border:mapQ===city.name+", Italy"?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.1)",background:mapQ===city.name+", Italy"?"rgba(196,112,75,0.15)":"var(--bg2)",color:mapQ===city.name+", Italy"?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer",marginBottom:10}}>Overzicht</button>
+
+            {(["cultuur","eten","tiktok","overig"] as const).map(cat=>{
+              const label=cat==="cultuur"?"Cultuur & Bezienswaardigheden":cat==="eten"?"Eten & Drinken":cat==="tiktok"?"TikTok Viral":"Overig";
+              const items=cat==="cultuur"?city.spots.map(p=>p.name):cat==="eten"?city.restaurants.map(r=>r.name):cat==="tiktok"?city.viral.map(v=>v.name):[];
+              const custom=cpois.filter(p=>p.cityId===city.id&&p.cat===cat);
+              const all=[...items,...custom.map(c=>c.name)];
+              if(all.length===0&&cat!=="overig") return null;
+              return(<div key={cat} style={{marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                  <span style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,textTransform:"uppercase"}}>{label}</span>
+                  <button onClick={()=>{setAddPoi(cat);setPoiCat(cat)}} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:4,color:"var(--terra-l)",fontSize:9,padding:"2px 6px",cursor:"pointer"}}>+ toevoegen</button>
+                </div>
+                {addPoi===cat&&(<div style={{display:"flex",gap:6,marginBottom:8}}>
+                  <input placeholder="Naam plek..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){setCpois(p=>[...p,{id:uid(),name:poiName,cat,cityId:city.id}]);setPoiName("");setAddPoi(null)}}} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:6,padding:"4px 8px",color:"var(--cream)",fontSize:11,fontFamily:"var(--sans)",outline:"none",flex:1}}/>
+                  <button onClick={()=>{if(!poiName)return;setCpois(p=>[...p,{id:uid(),name:poiName,cat,cityId:city.id}]);setPoiName("");setAddPoi(null)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:6,padding:"4px 10px",fontSize:10,cursor:"pointer"}}>+</button>
+                  <button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:6,padding:"4px 8px",color:"var(--cream3)",fontSize:10,cursor:"pointer"}}>x</button>
+                </div>)}
+                <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                  {items.map((n,i)=>(<button key={"b"+i} onClick={()=>setMapQ(n+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,fontSize:10,cursor:"pointer",border:mapQ?.includes(n)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(n)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(n)?"var(--terra-l)":"var(--cream2)"}}>{n}</button>))}
+                  {custom.map(c=>(<div key={c.id} style={{display:"flex",alignItems:"center",gap:0}}>
+                    <button onClick={()=>setMapQ(c.name+", "+city.name+", Italy")} style={{padding:"4px 10px",fontSize:10,cursor:"pointer",border:mapQ?.includes(c.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(c.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(c.name)?"var(--terra-l)":"var(--cream2)",borderRadius:"6px 0 0 6px"}}>{c.name}</button>
+                    <button onClick={()=>setCpois(p=>p.filter(x=>x.id!==c.id))} style={{padding:"4px 6px",borderRadius:"0 6px 6px 0",border:"1px solid rgba(255,255,255,0.08)",borderLeft:"none",background:"var(--bg3)",color:"rgba(255,255,255,0.2)",fontSize:9,cursor:"pointer"}}>x</button>
+                  </div>))}
+                </div>
+              </div>);
+            })}
           </div>
           <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:10,padding:"12px 14px",marginBottom:24}}>
             <div style={{fontSize:10,color:"var(--cream3)",letterSpacing:1,marginBottom:8}}>Als eerste doen</div>
