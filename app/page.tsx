@@ -221,3 +221,250 @@ const s: Record<string, React.CSSProperties> = {
 
   footer: { textAlign: "center" as const, padding: "32px 0 48px", fontSize: 14, color: "var(--accent)", fontFamily: "var(--font-serif)", fontStyle: "italic" },
 };
+
+const INITIAL_DAYS: DayPlan[] = [
+  { day:1, date:"TBD", title:"Aankomst Venetië", cityId:"venezia", hotel:"Hotel nabij San Marco", activities:["Aankomst luchthaven Marco Polo","Vaporetto naar hotel","Eerste wandeling: San Marco → Rialto","Aperitivo bij zonsondergang"], evening:"Cicchetti tour Cannaregio" },
+  { day:2, date:"TBD", title:"Venetië → Gardameer", cityId:"garda", hotel:"Hotel Berta, Gardameer", hotelLink:"https://maps.google.com/?q=Hotel+Berta+Lake+Garda", activities:["Ochtend: Burano bezoeken","Middag: checkout + trein/auto naar Gardameer","Aankomst Hotel Berta"], evening:"Rustige avond aan het meer" },
+  { day:3, date:"TBD", title:"Gardameer → Verona", cityId:"verona", hotel:"Hotel Verona centrum", activities:["Ochtend: Sirmione of Limone sul Garda","Lunch aan het meer","Middag: doorrijden naar Verona","Eerste verkenning Piazza delle Erbe"], evening:"Aperitivo Piazza Bra + Arena bekijken" },
+  { day:4, date:"TBD", title:"Verona", cityId:"verona", hotel:"Hotel Verona centrum", activities:["Arena di Verona","Ponte Pietra + Castel San Pietro","Juliet's Balkon (voor de foto)","Amarone wijnproeverij Valpolicella"], evening:"Diner Osteria al Duca" },
+  { day:5, date:"TBD", title:"Verona → Toscane", cityId:"toscane", hotel:"Agriturismo/B&B Chianti", activities:["Ochtend: vertrek naar Toscane (~3u)","Onderweg: stop in Bologna voor lunch?","Aankomst Toscane, inchecken","Avondwandeling door het platteland"], evening:"Wijn + kaas bij agriturismo" },
+  { day:6, date:"TBD", title:"Firenze", cityId:"toscane", hotel:"Agriturismo/B&B Chianti", activities:["Uffizi Gallery (ochtend)","Ponte Vecchio","Duomo + uitzicht Piazzale Michelangelo","All'Antico Vinaio panini lunch"], evening:"Diner Trattoria Mario" },
+  { day:7, date:"TBD", title:"San Gimignano & Siena", cityId:"toscane", hotel:"Agriturismo/B&B Chianti", activities:["Ochtend: San Gimignano + gelato Dondero","Middag: Siena, Piazza del Campo","Val d'Orcia rijden als tijd over"], evening:"Laatste avond Toscane" },
+  { day:8, date:"TBD", title:"Toscane → Napels", cityId:"napels", hotel:"Hotel Napels centrum", activities:["Trein Firenze → Napels (~3u Frecciarossa)","Aankomst + inchecken","Spaccanapoli wandeling","Napoli Sotterranea tour"], evening:"Pizza Da Michele" },
+  { day:9, date:"TBD", title:"Pompeï & Amalfikust", cityId:"amalfi", hotel:"B&B Amalfikust", activities:["Ochtend: Circumvesuviana naar Pompeï","Middag: door naar Positano/Amalfi","Strand of Sentiero degli Dei wandeling"], evening:"Diner met uitzicht op zee" },
+  { day:10, date:"TBD", title:"Amalfikust → Terug", cityId:"amalfi", hotel:"—", activities:["Ochtend: Ravello of Amalfi verkennen","Limoncello proeven","Terugreis naar luchthaven Napels","Vlucht naar huis"], evening:"Arrivederci Italia 🇮🇹" },
+];
+
+const DEFAULT_MUSTSEE: MustSeeItem[] = [
+  { id:"ms1", title:"Zonsondergang Ponte Vecchio", desc:"Gouden uur over de Arno", done:false },
+  { id:"ms2", title:"Pompeï vroeg in de ochtend", desc:"Voor de drukte, magisch licht", done:false },
+  { id:"ms3", title:"Burano kleurenwijk", desc:"Instagram-perfect eiland bij Venetië", done:false },
+  { id:"ms4", title:"Sentiero degli Dei", desc:"Pad der Goden langs de Amalfikust", done:false },
+];
+
+/* ── HELPERS ── */
+const uid = () => Math.random().toString(36).slice(2,9);
+function useLocal<T>(key:string, init:T):[T,(v:T|((_:T)=>T))=>void] {
+  const [val,setVal] = useState<T>(init);
+  useEffect(()=>{ try{ const s=localStorage.getItem(key); if(s) setVal(JSON.parse(s)); }catch{} },[key]);
+  const set = (v:T|((_:T)=>T)) => { setVal(prev=>{ const next = typeof v==='function'?(v as (_:T)=>T)(prev):v; localStorage.setItem(key,JSON.stringify(next)); return next; }); };
+  return [val,set];
+}
+
+/* ── COMPONENT ── */
+type Tab = "plan"|"cities"|"mustsee"|"todo";
+
+export default function Page() {
+  const [tab,setTab] = useState<Tab>("plan");
+  const [cityId,setCityId] = useState<string|null>(null);
+  const [mustSee,setMustSee] = useLocal<MustSeeItem[]>("italia-mustsee", DEFAULT_MUSTSEE);
+  const [todos,setTodos] = useLocal<TodoItem[]>("italia-todos", []);
+  const [showEmergency,setShowEmergency] = useState(false);
+  const [addingMS,setAddingMS] = useState(false);
+  const [addingTodo,setAddingTodo] = useState(false);
+  const [msForm,setMsForm] = useState({title:"",desc:"",link:"",image:""});
+  const [todoText,setTodoText] = useState("");
+
+  const city = cityId ? CITIES.find(c=>c.id===cityId) : null;
+
+  const addMustSee = () => { if(!msForm.title) return; setMustSee(p=>[...p,{id:uid(),title:msForm.title,desc:msForm.desc,link:msForm.link||undefined,image:msForm.image||undefined,done:false}]); setMsForm({title:"",desc:"",link:"",image:""}); setAddingMS(false); };
+  const addTodo = () => { if(!todoText) return; setTodos(p=>[...p,{id:uid(),text:todoText,done:false}]); setTodoText(""); setAddingTodo(false); };
+  const toggleMS = (id:string) => setMustSee(p=>p.map(m=>m.id===id?{...m,done:!m.done}:m));
+  const deleteMS = (id:string) => setMustSee(p=>p.filter(m=>m.id!==id));
+  const toggleTodo = (id:string) => setTodos(p=>p.map(t=>t.id===id?{...t,done:!t.done}:t));
+  const deleteTodo = (id:string) => setTodos(p=>p.filter(t=>t.id!==id));
+
+  return (
+    <div style={s.wrapper}>
+      <header style={s.header}>
+        <div style={s.pin}>2026</div>
+        <h1 style={s.title}>Italia</h1>
+        <p style={s.subtitle}>Tein & Tessa · 10 dagen</p>
+      </header>
+
+      {/* TABS */}
+      <nav style={s.tabs}>
+        {([["plan","📅 Planning"],["cities","🏙️ Steden"],["mustsee","⭐ Must-See"],["todo","✅ To-Do"]] as [Tab,string][]).map(([t,label])=>(
+          <button key={t} onClick={()=>{setTab(t);setCityId(null)}} style={{...s.tab,...(tab===t?s.tabActive:{})}}>{label}</button>
+        ))}
+      </nav>
+
+      {/* ── PLANNING TAB ── */}
+      {tab==="plan" && (
+        <div style={s.content}>
+          {INITIAL_DAYS.map(d=>{
+            const c = CITIES.find(x=>x.id===d.cityId);
+            return (
+              <div key={d.day} style={{...s.dayCard,borderLeft:`3px solid ${d.day<=2?'#2d4a5e':d.day<=4?'#3a2845':d.day<=7?'#3d4a2a':'#4a2c1e'}`}}>
+                <div style={s.dayHeader}>
+                  <span style={s.dayNum}>Dag {d.day}</span>
+                  <span style={s.dayTitle}>{d.title}</span>
+                  {c && <span style={{cursor:"pointer"}} onClick={()=>{setCityId(c.id);setTab("cities")}}>{c.emoji}</span>}
+                </div>
+                <div style={s.dayHotel}>🏨 {d.hotel} {d.hotelLink && <a href={d.hotelLink} target="_blank" rel="noreferrer" style={s.hotelLink}>Maps ↗</a>}</div>
+                <div style={s.dayActivities}>
+                  {d.activities.map((a,i)=><div key={i} style={s.activityItem}>• {a}</div>)}
+                </div>
+                <div style={s.dayEvening}>🌙 {d.evening}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── CITIES TAB ── */}
+      {tab==="cities" && !city && (
+        <div style={s.content}>
+          {CITIES.map(c=>(
+            <button key={c.id} onClick={()=>setCityId(c.id)} style={{...s.cityCard,background:c.hero}}>
+              <span style={s.cityEmoji}>{c.emoji}</span>
+              <div><div style={s.cityName}>{c.city}</div><div style={s.cityDays}>{c.region}</div></div>
+              <span style={s.cityArrow}>→</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {tab==="cities" && city && (
+        <div style={s.content}>
+          <button onClick={()=>setCityId(null)} style={s.backBtn}>← Alle steden</button>
+          <div style={{...s.detailHero,background:city.hero}}>
+            <span style={s.detailEmoji}>{city.emoji}</span>
+            <h2 style={s.detailTitle}>{city.city}</h2>
+            <p style={s.detailDays}>{city.region}</p>
+          </div>
+          <p style={s.detailIntro}>{city.intro}</p>
+          <div style={s.mapWrap}><iframe style={s.mapFrame} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${city.lat},${city.lng}&zoom=${city.zoom}&maptype=roadmap`} allowFullScreen /></div>
+          <section style={s.section}><h3 style={s.secTitle}>Must-do&apos;s</h3>{city.mustDo.map((p,i)=>(<div key={i} style={s.card}><div style={s.cardName}>{p.name}</div><div style={s.cardDesc}>{p.desc}</div>{p.tip&&<div style={s.tip}>💡 {p.tip}</div>}</div>))}</section>
+          <section style={s.section}><h3 style={s.secTitle}>Eten &amp; drinken</h3>{city.restaurants.map((r,i)=>(<div key={i} style={s.card}><div style={s.cardName}>{r.name} <span style={s.price}>{r.price}</span></div><div style={s.cardDesc}>{r.cuisine}</div>{r.tip&&<div style={s.tip}>💡 {r.tip}</div>}</div>))}</section>
+          <section style={s.section}><h3 style={s.secTitle}>Vervoer</h3>{city.transport.map((t,i)=>(<div key={i} style={s.transportItem}>🚃 {t}</div>))}</section>
+        </div>
+      )}
+
+      {/* ── MUST-SEE TAB ── */}
+      {tab==="mustsee" && (
+        <div style={s.content}>
+          <div style={s.listHeader}><h2 style={s.listTitle}>⭐ Must-See Lijst</h2><button onClick={()=>setAddingMS(true)} style={s.addBtn}>+ Toevoegen</button></div>
+          {addingMS && (
+            <div style={s.formBox}>
+              <input placeholder="Titel *" value={msForm.title} onChange={e=>setMsForm({...msForm,title:e.target.value})} style={s.input} />
+              <input placeholder="Beschrijving" value={msForm.desc} onChange={e=>setMsForm({...msForm,desc:e.target.value})} style={s.input} />
+              <input placeholder="Link (optioneel)" value={msForm.link} onChange={e=>setMsForm({...msForm,link:e.target.value})} style={s.input} />
+              <input placeholder="Afbeelding URL (optioneel)" value={msForm.image} onChange={e=>setMsForm({...msForm,image:e.target.value})} style={s.input} />
+              <div style={s.formActions}><button onClick={addMustSee} style={s.saveBtn}>Opslaan</button><button onClick={()=>setAddingMS(false)} style={s.cancelBtn}>Annuleer</button></div>
+            </div>
+          )}
+          {mustSee.map(m=>(
+            <div key={m.id} style={{...s.msCard,...(m.done?{opacity:0.5}:{})}}>
+              {m.image && <div style={{...s.msImg,backgroundImage:`url(${m.image})`}} />}
+              <div style={s.msContent}>
+                <div style={s.msTitle}><button onClick={()=>toggleMS(m.id)} style={s.checkBtn}>{m.done?"✅":"⬜"}</button> {m.link?<a href={m.link} target="_blank" rel="noreferrer" style={s.msLink}>{m.title} ↗</a>:m.title}</div>
+                {m.desc && <div style={s.msDesc}>{m.desc}</div>}
+              </div>
+              <button onClick={()=>deleteMS(m.id)} style={s.delBtn}>✕</button>
+            </div>
+          ))}
+          {mustSee.length===0 && <p style={s.empty}>Nog geen items. Voeg je eerste must-see toe!</p>}
+        </div>
+      )}
+
+      {/* ── TODO TAB ── */}
+      {tab==="todo" && (
+        <div style={s.content}>
+          <div style={s.listHeader}><h2 style={s.listTitle}>✅ To-Do Lijst</h2><button onClick={()=>setAddingTodo(true)} style={s.addBtn}>+ Toevoegen</button></div>
+          {addingTodo && (
+            <div style={s.formBox}>
+              <input placeholder="Wat moet er gebeuren?" value={todoText} onChange={e=>setTodoText(e.target.value)} style={s.input} onKeyDown={e=>e.key==="Enter"&&addTodo()} />
+              <div style={s.formActions}><button onClick={addTodo} style={s.saveBtn}>Toevoegen</button><button onClick={()=>setAddingTodo(false)} style={s.cancelBtn}>Annuleer</button></div>
+            </div>
+          )}
+          {todos.map(t=>(
+            <div key={t.id} style={{...s.todoItem,...(t.done?{opacity:0.5}:{})}}>
+              <button onClick={()=>toggleTodo(t.id)} style={s.checkBtn}>{t.done?"✅":"⬜"}</button>
+              <span style={{...s.todoText,...(t.done?{textDecoration:"line-through"}:{})}}>{t.text}</span>
+              <button onClick={()=>deleteTodo(t.id)} style={s.delBtn}>✕</button>
+            </div>
+          ))}
+          {todos.length===0 && <p style={s.empty}>Nog geen to-do items.</p>}
+        </div>
+      )}
+
+      {/* EMERGENCY */}
+      <button onClick={()=>setShowEmergency(!showEmergency)} style={s.emergBtn}>🚨 Nood {showEmergency?"▲":"▼"}</button>
+      {showEmergency && <div style={s.emergBox}>{Object.entries(EMERGENCY).map(([k,v])=><div key={k} style={s.emergRow}><span style={s.emergLabel}>{k}</span><a href={`tel:${v.replace(/\s/g,"")}`} style={s.emergVal}>{v}</a></div>)}</div>}
+
+      <footer style={s.footer}>Buon viaggio, Tein &amp; Tessa 🇮🇹</footer>
+    </div>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  wrapper:{maxWidth:480,margin:"0 auto",padding:"0 16px",minHeight:"100vh"},
+  header:{textAlign:"center",padding:"40px 0 20px"},
+  pin:{display:"inline-block",background:"#c4704b",color:"#fff",fontSize:11,fontWeight:600,letterSpacing:2,padding:"4px 14px",borderRadius:20,marginBottom:12,textTransform:"uppercase" as const},
+  title:{fontFamily:"var(--font-serif)",fontSize:48,fontWeight:400,color:"var(--cream)",lineHeight:1.1,margin:0},
+  subtitle:{fontSize:14,color:"var(--cream-muted)",marginTop:6},
+  tabs:{display:"flex",gap:4,marginBottom:20,overflowX:"auto" as const,paddingBottom:4},
+  tab:{flex:1,padding:"10px 6px",background:"var(--bg-card)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:10,color:"var(--cream-muted)",fontSize:12,fontFamily:"var(--font-sans)",cursor:"pointer",whiteSpace:"nowrap" as const,minWidth:0},
+  tabActive:{background:"#c4704b",color:"#fff",borderColor:"#c4704b"},
+  content:{paddingBottom:16},
+  // Day planning
+  dayCard:{background:"var(--bg-card)",borderRadius:14,padding:"16px 18px",marginBottom:12,border:"1px solid rgba(255,255,255,0.04)"},
+  dayHeader:{display:"flex",alignItems:"center",gap:8,marginBottom:8},
+  dayNum:{background:"rgba(196,112,75,0.2)",color:"#d4886a",fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:8},
+  dayTitle:{fontFamily:"var(--font-serif)",fontSize:18,fontWeight:400,color:"var(--cream)",flex:1},
+  dayHotel:{fontSize:13,color:"var(--cream-muted)",marginBottom:8,padding:"6px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"},
+  hotelLink:{color:"#d4886a",textDecoration:"none",fontSize:12,marginLeft:6},
+  dayActivities:{marginBottom:6},
+  activityItem:{fontSize:13,color:"var(--cream-muted)",padding:"3px 0",lineHeight:1.5},
+  dayEvening:{fontSize:13,color:"#8b6f5e",fontStyle:"italic",paddingTop:6,borderTop:"1px solid rgba(255,255,255,0.04)"},
+  // Cities
+  cityCard:{display:"flex",alignItems:"center",gap:14,padding:18,borderRadius:14,border:"1px solid rgba(255,255,255,0.06)",cursor:"pointer",color:"var(--cream)",textAlign:"left" as const,fontSize:16,width:"100%",marginBottom:8},
+  cityEmoji:{fontSize:28,flexShrink:0},
+  cityName:{fontFamily:"var(--font-serif)",fontSize:20,fontWeight:400},
+  cityDays:{fontSize:12,color:"var(--cream-muted)",marginTop:2},
+  cityArrow:{marginLeft:"auto",fontSize:18,color:"#c4704b",flexShrink:0},
+  backBtn:{background:"none",border:"none",color:"#d4886a",fontSize:14,cursor:"pointer",padding:"8px 0",marginBottom:8},
+  detailHero:{borderRadius:18,padding:"32px 20px",textAlign:"center" as const,marginBottom:16},
+  detailEmoji:{fontSize:44,display:"block",marginBottom:6},
+  detailTitle:{fontFamily:"var(--font-serif)",fontSize:32,fontWeight:400,color:"#fff",margin:0},
+  detailDays:{fontSize:13,color:"rgba(255,255,255,0.7)",marginTop:4},
+  detailIntro:{fontSize:14,lineHeight:1.7,color:"var(--cream-muted)",marginBottom:20,fontStyle:"italic",fontFamily:"var(--font-serif)"},
+  mapWrap:{borderRadius:14,overflow:"hidden",marginBottom:24,border:"1px solid rgba(255,255,255,0.08)"},
+  mapFrame:{width:"100%",height:200,border:"none",display:"block"},
+  section:{marginBottom:24},
+  secTitle:{fontFamily:"var(--font-serif)",fontSize:20,fontWeight:400,color:"var(--cream)",marginBottom:12,paddingBottom:6,borderBottom:"1px solid rgba(255,255,255,0.08)"},
+  card:{background:"var(--bg-card)",borderRadius:12,padding:"14px 16px",marginBottom:8,border:"1px solid rgba(255,255,255,0.04)"},
+  cardName:{fontSize:14,fontWeight:600,color:"var(--cream)",marginBottom:3},
+  cardDesc:{fontSize:12,color:"var(--cream-muted)",lineHeight:1.5},
+  price:{color:"#d4886a",fontWeight:400,fontSize:12},
+  tip:{fontSize:11,color:"#d4886a",marginTop:6},
+  transportItem:{fontSize:13,color:"var(--cream-muted)",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)",lineHeight:1.5},
+  // Must-see & Todo
+  listHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16},
+  listTitle:{fontFamily:"var(--font-serif)",fontSize:22,fontWeight:400,color:"var(--cream)",margin:0},
+  addBtn:{background:"#c4704b",color:"#fff",border:"none",borderRadius:10,padding:"8px 16px",fontSize:13,cursor:"pointer",fontFamily:"var(--font-sans)"},
+  formBox:{background:"var(--bg-card)",borderRadius:14,padding:16,marginBottom:16,border:"1px solid rgba(255,255,255,0.08)",display:"flex",flexDirection:"column" as const,gap:10},
+  input:{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"10px 12px",color:"var(--cream)",fontSize:14,fontFamily:"var(--font-sans)",outline:"none",width:"100%",boxSizing:"border-box" as const},
+  formActions:{display:"flex",gap:8},
+  saveBtn:{background:"#c4704b",color:"#fff",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,cursor:"pointer"},
+  cancelBtn:{background:"transparent",color:"var(--cream-muted)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer"},
+  msCard:{background:"var(--bg-card)",borderRadius:14,padding:14,marginBottom:10,border:"1px solid rgba(255,255,255,0.04)",display:"flex",gap:12,alignItems:"flex-start"},
+  msImg:{width:60,height:60,borderRadius:10,backgroundSize:"cover",backgroundPosition:"center",flexShrink:0},
+  msContent:{flex:1,minWidth:0},
+  msTitle:{fontSize:14,fontWeight:600,color:"var(--cream)",display:"flex",alignItems:"center",gap:6},
+  msLink:{color:"#d4886a",textDecoration:"none"},
+  msDesc:{fontSize:12,color:"var(--cream-muted)",marginTop:4,lineHeight:1.4},
+  checkBtn:{background:"none",border:"none",fontSize:16,cursor:"pointer",padding:0,flexShrink:0},
+  delBtn:{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:14,cursor:"pointer",padding:"4px",flexShrink:0},
+  todoItem:{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--bg-card)",borderRadius:12,marginBottom:8,border:"1px solid rgba(255,255,255,0.04)"},
+  todoText:{fontSize:14,color:"var(--cream)",flex:1},
+  empty:{fontSize:13,color:"var(--cream-muted)",textAlign:"center" as const,padding:32,fontStyle:"italic"},
+  // Emergency
+  emergBtn:{background:"rgba(196,112,75,0.12)",border:"1px solid rgba(196,112,75,0.3)",borderRadius:12,padding:"12px 18px",color:"#d4886a",fontSize:13,cursor:"pointer",width:"100%",textAlign:"left" as const,marginTop:12},
+  emergBox:{background:"var(--bg-card)",borderRadius:12,padding:14,display:"flex",flexDirection:"column" as const,gap:8,marginTop:8},
+  emergRow:{display:"flex",justifyContent:"space-between",alignItems:"center"},
+  emergLabel:{fontSize:12,color:"var(--cream-muted)"},
+  emergVal:{fontSize:13,color:"#d4886a",textDecoration:"none",fontWeight:500},
+  footer:{textAlign:"center" as const,padding:"28px 0 44px",fontSize:13,color:"var(--accent)",fontFamily:"var(--font-serif)",fontStyle:"italic"},
+};
