@@ -173,6 +173,13 @@ export default function Page() {
     restaurants:[{name:"Da Vincenzo",cuisine:"Vis",price:"€€€",tip:"Positano — terras reserveren"},{name:"Le Arcate",cuisine:"Pizza/pasta",price:"€",tip:"Atrani — budget aan zee"}],
     transport:["SITA-bus langs de kust","Veerboot Positano↔Amalfi↔Salerno","Auto afgeraden — smalle wegen","Trein naar Salerno, dan bus/boot"]
   },
+  { id:"rome", city:"Rome", region:"Lazio", emoji:"🏛️", lat:41.9028,lng:12.4964,zoom:13, hero:"linear-gradient(135deg,#2a1a1a,#5e3a2d)", intro:"De Eeuwige Stad. 3000 jaar geschiedenis, van Colosseum tot carbonara.",
+    mustDo:[{name:"Colosseum",desc:"Het iconische amfitheater",tip:"Boek combi-ticket met Forum Romanum"},{name:"Vaticaan \u0026 Sixtijnse Kapel",desc:"Michelangelo\s
+  { id:"rome", city:"Rome", region:"Lazio", emoji:"🏛️", lat:41.9028,lng:12.4964,zoom:13, hero:"linear-gradient(135deg,#2a1a1a,#5e3a2d)", intro:"De Eeuwige Stad. 3000 jaar geschiedenis, van Colosseum tot carbonara.",
+    mustDo:[{name:"Colosseum",desc:"Het iconische amfitheater",tip:"Combi-ticket met Forum Romanum"},{name:"Vaticaan & Sixtijnse Kapel",desc:"Michelangelo's meesterwerk",tip:"Boek online, vrijdag 's middags"},{name:"Pantheon",desc:"2000 jaar oud, nog steeds intact",tip:"Gratis toegang, vroeg gaan"},{name:"Trastevere",desc:"Bohemien wijk — eten, drinken, verdwalen",tip:"'s Avonds het mooist"},{name:"Trevi-fontein",desc:"Gooi een munt en kom terug",tip:"Voor zonsopgang = lege piazza"}],
+    restaurants:[{name:"Da Enzo al 29",cuisine:"Romeins",price:"€€",tip:"Cacio e pepe is legendarisch"},{name:"Pizzarium Bonci",cuisine:"Pizza al taglio",price:"€",tip:"Beste pizza al taglio ter wereld"},{name:"Roscioli",cuisine:"Deli/pasta",price:"€€",tip:"Carbonara als religieuze ervaring"},{name:"Supplizio",cuisine:"Street food",price:"€",tip:"Supplì — Romeinse arancini"}],
+    transport:["Metro A & B kruisen bij Termini","Bus 40/64 Termini→Vaticaan","Roma Pass: 48/72h OV + musea","ZTL — absoluut geen auto centrum"]
+  },
 ];
 
 /* ── STYLES ── */
@@ -233,6 +240,8 @@ const INITIAL_DAYS: DayPlan[] = [
   { day:8, date:"TBD", title:"Toscane → Napels", cityId:"napels", hotel:"Hotel Napels centrum", activities:["Trein Firenze → Napels (~3u Frecciarossa)","Aankomst + inchecken","Spaccanapoli wandeling","Napoli Sotterranea tour"], evening:"Pizza Da Michele" },
   { day:9, date:"TBD", title:"Pompeï & Amalfikust", cityId:"amalfi", hotel:"B&B Amalfikust", activities:["Ochtend: Circumvesuviana naar Pompeï","Middag: door naar Positano/Amalfi","Strand of Sentiero degli Dei wandeling"], evening:"Diner met uitzicht op zee" },
   { day:10, date:"TBD", title:"Amalfikust → Terug", cityId:"amalfi", hotel:"—", activities:["Ochtend: Ravello of Amalfi verkennen","Limoncello proeven","Terugreis naar luchthaven Napels","Vlucht naar huis"], evening:"Arrivederci Italia 🇮🇹" },
+  { id:"rome", city:"Rome", region:"Lazio", emoji:"🏛️", lat:41.9028,lng:12.4964,zoom:13, hero:"linear-gradient(135deg,#2a1a1a,#5e3a2d)", intro:"De Eeuwige Stad. 3000 jaar geschiedenis, van Colosseum tot carbonara.",
+    mustDo:[{name:"Colosseum",desc:"Het iconische amfitheater",tip:"Boek combi-ticket met Forum Romanum"},{name:"Vaticaan \u0026 Sixtijnse Kapel",desc:"Michelangelo\s
 ];
 
 const DEFAULT_MUSTSEE: MustSeeItem[] = [
@@ -240,6 +249,8 @@ const DEFAULT_MUSTSEE: MustSeeItem[] = [
   { id:"ms2", title:"Pompeï vroeg in de ochtend", desc:"Voor de drukte, magisch licht", done:false },
   { id:"ms3", title:"Burano kleurenwijk", desc:"Instagram-perfect eiland bij Venetië", done:false },
   { id:"ms4", title:"Sentiero degli Dei", desc:"Pad der Goden langs de Amalfikust", done:false },
+  { id:"rome", city:"Rome", region:"Lazio", emoji:"🏛️", lat:41.9028,lng:12.4964,zoom:13, hero:"linear-gradient(135deg,#2a1a1a,#5e3a2d)", intro:"De Eeuwige Stad. 3000 jaar geschiedenis, van Colosseum tot carbonara.",
+    mustDo:[{name:"Colosseum",desc:"Het iconische amfitheater",tip:"Boek combi-ticket met Forum Romanum"},{name:"Vaticaan \u0026 Sixtijnse Kapel",desc:"Michelangelo\s
 ];
 
 /* ── HELPERS ── */
