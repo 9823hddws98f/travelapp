@@ -132,17 +132,29 @@ export default function Page(){
 
         {view==="plan"&&selDay&&(()=>{const d=DAYS.find(x=>x.day===selDay)!;const c=C.find(x=>x.id===d.cityId)!;return(
           <div style={{animation:"fadeUp .3s ease"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20,flexWrap:"wrap",gap:12}}>
-              <div>
-                <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,marginBottom:4}}>DAG {d.day} VAN 10</div>
-                <h2 style={{fontFamily:"var(--serif)",fontSize:28}}>{d.title}</h2>
-              </div>
-              <button onClick={()=>openC(c.id)} style={{background:c.color,border:"none",borderRadius:10,padding:"8px 14px",color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"var(--sans)"}}>{c.name} bekijken</button>
+            <div style={{background:`linear-gradient(135deg,${c.color},${c.color}cc)`,borderRadius:18,padding:"32px 24px",marginBottom:20}}>
+              <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:2,marginBottom:4}}>DAG {d.day} VAN 10</div>
+              <h2 style={{fontFamily:"var(--serif)",fontSize:34,color:"#fff",fontWeight:400}}>{d.title}</h2>
+              <p style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:4}}>{c.name} / {c.region}</p>
             </div>
+
+            <p style={{fontSize:15,lineHeight:1.7,color:"var(--cream2)",marginBottom:20,fontFamily:"var(--serif)",fontStyle:"italic"}}>{c.intro}</p>
+
+            <div style={{borderRadius:14,overflow:"hidden",marginBottom:20,border:"1px solid rgba(255,255,255,0.08)"}}>
+              <iframe style={{width:"100%",height:280,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
+            </div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
+              <button onClick={()=>setMapQ(c.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(255,255,255,0.1)",background:!mapQ||mapQ===c.name+", Italy"?"rgba(196,112,75,0.15)":"var(--bg2)",color:"var(--cream2)",fontSize:10,cursor:"pointer"}}>Overzicht</button>
+              {[...c.spots,...c.restaurants.map(r=>({name:r.name,desc:r.type}))].map((p,i)=>(
+                <button key={i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.1)",background:mapQ?.includes(p.name)?"rgba(196,112,75,0.15)":"var(--bg2)",color:mapQ?.includes(p.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{p.name}</button>
+              ))}
+            </div>
+
             <div style={{background:"var(--bg2)",borderRadius:14,padding:"14px 18px",marginBottom:16,border:"1px solid rgba(255,255,255,0.06)"}}>
               <div style={{fontSize:10,fontWeight:700,color:"var(--cream3)",letterSpacing:1,marginBottom:6}}>HOTEL</div>
               <div style={{fontSize:15,color:"var(--cream)"}}>{d.hotel}{d.hotelUrl&&<a href={d.hotelUrl} target="_blank" rel="noreferrer" style={{color:"var(--terra-l)",textDecoration:"none",fontSize:12,marginLeft:8}}>Maps</a>}</div>
             </div>
+
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
               <div style={{background:"var(--bg2)",borderRadius:14,padding:"14px 18px",border:"1px solid rgba(255,255,255,0.06)"}}>
                 <div style={{fontSize:10,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:8}}>OCHTEND</div>
@@ -153,10 +165,25 @@ export default function Page(){
                 {d.afternoon.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--cream2)",padding:"3px 0",lineHeight:1.5}}>{"\u00B7 "+a}</div>)}
               </div>
             </div>
-            <div style={{background:"var(--bg2)",borderRadius:14,padding:"14px 18px",border:"1px solid rgba(255,255,255,0.06)"}}>
+            <div style={{background:"var(--bg2)",borderRadius:14,padding:"14px 18px",marginBottom:20,border:"1px solid rgba(255,255,255,0.06)"}}>
               <div style={{fontSize:10,fontWeight:700,color:"var(--cream3)",letterSpacing:1,marginBottom:6}}>AVOND</div>
               <div style={{fontSize:14,color:"var(--cream)",fontStyle:"italic"}}>{d.evening}</div>
             </div>
+
+            <div style={{background:"rgba(196,112,75,0.08)",border:"1px solid rgba(196,112,75,0.15)",borderRadius:14,padding:"16px 18px",marginBottom:24}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:10}}>ALS EERSTE DOEN</div>
+              {c.firstSteps.map((s,i)=><div key={i} style={{fontSize:13,color:"var(--cream)",padding:"4px 0",display:"flex",gap:8}}><span style={{color:"var(--terra-l)",fontWeight:700,flexShrink:0}}>{i+1}.</span>{s}</div>)}
+            </div>
+
+            <div style={{display:"flex",gap:6,marginBottom:16}}>
+              {(["do","eat","viral","move"] as const).map(t=>(
+                <button key={t} onClick={()=>setCtab(t)} style={{flex:1,padding:"8px 4px",borderRadius:8,border:ctab===t?"2px solid var(--terra)":"1px solid rgba(255,255,255,0.06)",background:ctab===t?"rgba(196,112,75,0.12)":"var(--bg2)",color:ctab===t?"var(--terra-l)":"var(--cream2)",fontSize:11,cursor:"pointer",fontFamily:"var(--sans)"}}>{t==="do"?"Bezienswaardigheden":t==="eat"?"Restaurants":t==="viral"?"TikTok Viral":"Vervoer"}</button>
+              ))}
+            </div>
+            {ctab==="do"&&c.spots.map((p,i)=>(<div key={i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{background:mapQ?.includes(p.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:12,padding:"14px 16px",marginBottom:8,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)",marginBottom:3}}>{p.name}</div><div style={{fontSize:12,color:"var(--cream2)",lineHeight:1.5}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--terra-l)",marginTop:6}}>{p.tip}</div>}</div>))}
+            {ctab==="eat"&&c.restaurants.map((r,i)=>(<div key={i} onClick={()=>setMapQ(r.name+", "+c.name+", Italy")} style={{background:mapQ?.includes(r.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:12,padding:"14px 16px",marginBottom:8,border:mapQ?.includes(r.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)",marginBottom:3}}>{r.name} <span style={{color:"var(--terra-l)",fontSize:12}}>{r.price}</span></div><div style={{fontSize:12,color:"var(--cream2)"}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--terra-l)",marginTop:6}}>{r.tip}</div>}</div>))}
+            {ctab==="viral"&&c.viral.map((v,i)=>(<div key={i} style={{background:"var(--bg2)",borderRadius:12,padding:"14px 16px",marginBottom:8,border:"1px solid rgba(255,255,255,0.04)"}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)",marginBottom:3}}>{v.name}</div><div style={{fontSize:12,color:"var(--cream2)",lineHeight:1.5}}>{v.desc}</div><div style={{fontSize:10,color:"var(--terra-l)",marginTop:6}}>{v.tag}</div></div>))}
+            {ctab==="move"&&c.transport.map((t,i)=>(<div key={i} style={{fontSize:13,color:"var(--cream2)",padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)",lineHeight:1.5}}>{t}</div>))}
           </div>
         )})()}
 
