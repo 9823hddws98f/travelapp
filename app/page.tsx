@@ -1,14 +1,15 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "./supabase";
 
 interface Spot{name:string;desc:string;tip?:string}
 interface Resto{name:string;type:string;price:string;tip?:string}
 interface Viral{name:string;desc:string;tag:string}
 interface City{id:string;name:string;region:string;color:string;lat:number;lng:number;zoom:number;intro:string;firstSteps:string[];spots:Spot[];restaurants:Resto[];viral:Viral[];transport:string[]}
 interface Day{day:number;title:string;cityId:string;hotel:string;hotelUrl?:string;morning:string[];afternoon:string[];evening:string;schedule:{time:string;what:string;type?:string}[]}
-interface MustSee{id:string;title:string;desc:string;link?:string;img?:string;done:boolean}
+interface MustSee{id:string;title:string;description:string;link?:string;img?:string;done:boolean}
 interface Todo{id:string;text:string;done:boolean}
-interface CustomPOI{id:string;name:string;cat:"cultuur"|"eten"|"tiktok"|"overig";cityId:string}
+interface CustomPOI{id:string;name:string;cat:string;city_id:string}
 interface DayPoi{id:string;day:number;name:string;desc:string;link?:string}
 
 const C:City[]=[
@@ -34,29 +35,30 @@ const DAYS:Day[]=[
 ];
 
 const INIT_MS:MustSee[]=[
-{id:"1",title:"Sunset Ponte Vecchio",desc:"Gouden uur over de Arno",done:false},
-{id:"2",title:"Pompei ochtendlicht",desc:"Magisch zonder drukte",done:false},
-{id:"3",title:"Burano kleuren",desc:"Fotogeniekste plek",done:false},
-{id:"4",title:"Sentiero degli Dei",desc:"Wandelen boven wolken",done:false},
-{id:"5",title:"Spritz bij Arena",desc:"Aperitivo Romeins uitzicht",done:false},
+{id:"1",title:"Sunset Ponte Vecchio",description:"Gouden uur over de Arno",done:false},
+{id:"2",title:"Pompei ochtendlicht",description:"Magisch zonder drukte",done:false},
+{id:"3",title:"Burano kleuren",description:"Fotogeniekste plek",done:false},
+{id:"4",title:"Sentiero degli Dei",description:"Wandelen boven wolken",done:false},
+{id:"5",title:"Spritz bij Arena",description:"Aperitivo Romeins uitzicht",done:false},
 ];
 
 const EMERG:Record<string,string>={"Algemeen":"112","Politie":"113","Ambulance":"118","Wegenwacht":"+39 803 116","NL Ambassade":"+39 06 3228 6001"};
 const uid=()=>Math.random().toString(36).slice(2,8);
 
-function useLS<T>(k:string,init:T):[T,(v:T|((_:T)=>T))=>void]{
-  const[v,setV]=useState<T>(init);
-  useEffect(()=>{try{const s=localStorage.getItem(k);if(s)setV(JSON.parse(s))}catch{}},[k]);
-  const set=(x:T|((_:T)=>T))=>{setV(p=>{const n=typeof x==="function"?(x as((_:T)=>T))(p):x;localStorage.setItem(k,JSON.stringify(n));return n})};
-  return[v,set];
+function useSB<T extends {id:string}>(table:string,init:T[]):[T[],(v:T[]|((_:T[])=>T[]))=>void,()=>Promise<void>]{
+  const[v,setV]=useState<T[]>(init);
+  const load=useCallback(async()=>{const{data}=await supabase.from(table).select("*").order("created_at",{ascending:true});if(data)setV(data as T[])},[table]);
+  useEffect(()=>{load()},[load]);
+  const set=(x:T[]|((_:T[])=>T[]))=>{setV(p=>typeof x==="function"?(x as((_:T[])=>T[]))(p):x)};
+  return[v,set,load];
 }
 
 export default function Page(){
   const[selDay,setSelDay]=useState<number|null>(null);
   const[cityId,setCityId]=useState<string|null>(null);
   const[view,setView]=useState<"plan"|"city"|"ms"|"td">("plan");
-  const[ms,setMs]=useLS<MustSee[]>("it-ms",INIT_MS);
-  const[todos,setTodos]=useLS<Todo[]>("it-td",[]);
+  const[ms,setMs,reloadMs]=useSB<MustSee>("travel_mustsee",INIT_MS);
+  const[todos,setTodos,reloadTd]=useSB<Todo>("travel_todos",[]);
   const[showAdd,setShowAdd]=useState(false);
   const[addTd,setAddTd]=useState(false);
   const[form,setForm]=useState({t:"",d:"",l:"",i:""});
@@ -64,7 +66,7 @@ export default function Page(){
   const[showE,setShowE]=useState(false);
   const[mapQ,setMapQ]=useState("");const[ctab,setCtab]=useState<"do"|"eat"|"viral"|"move">("do");
   const[showCities,setShowCities]=useState(false);
-  const[cpois,setCpois]=useLS<CustomPOI[]>("it-cpoi",[]);
+  const[cpois,setCpois,reloadPoi]=useSB<CustomPOI>("travel_custom_pois",[]);
   const[addPoi,setAddPoi]=useState<string|null>(null);
   const[poiName,setPoiName]=useState("");
   const[poiCat,setPoiCat]=useState<"cultuur"|"eten"|"tiktok"|"overig">("cultuur");
@@ -212,7 +214,7 @@ export default function Page(){
             {(["cultuur","eten","tiktok","overig"] as const).map(cat=>{
               const label=cat==="cultuur"?"Cultuur & Bezienswaardigheden":cat==="eten"?"Eten & Drinken":cat==="tiktok"?"TikTok Viral":"Overig";
               const items=cat==="cultuur"?city.spots.map(p=>p.name):cat==="eten"?city.restaurants.map(r=>r.name):cat==="tiktok"?city.viral.map(v=>v.name):[];
-              const custom=cpois.filter(p=>p.cityId===city.id&&p.cat===cat);
+              const custom=cpois.filter(p=>p.city_id===city.id&&p.cat===cat);
               const all=[...items,...custom.map(c=>c.name)];
               if(all.length===0&&cat!=="overig") return null;
               return(<div key={cat} style={{marginBottom:10}}>
@@ -221,15 +223,15 @@ export default function Page(){
                   <button onClick={()=>{setAddPoi(cat);setPoiCat(cat)}} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:4,color:"var(--terra-l)",fontSize:9,padding:"2px 6px",cursor:"pointer"}}>+ toevoegen</button>
                 </div>
                 {addPoi===cat&&(<div style={{display:"flex",gap:6,marginBottom:8}}>
-                  <input placeholder="Naam plek..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){setCpois(p=>[...p,{id:uid(),name:poiName,cat,cityId:city.id}]);setPoiName("");setAddPoi(null)}}} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:6,padding:"4px 8px",color:"var(--cream)",fontSize:11,fontFamily:"var(--sans)",outline:"none",flex:1}}/>
-                  <button onClick={()=>{if(!poiName)return;setCpois(p=>[...p,{id:uid(),name:poiName,cat,cityId:city.id}]);setPoiName("");setAddPoi(null)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:6,padding:"4px 10px",fontSize:10,cursor:"pointer"}}>+</button>
+                  <input placeholder="Naam plek..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat,city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:6,padding:"4px 8px",color:"var(--cream)",fontSize:11,fontFamily:"var(--sans)",outline:"none",flex:1}}/>
+                  <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat,city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:6,padding:"4px 10px",fontSize:10,cursor:"pointer"}}>+</button>
                   <button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:6,padding:"4px 8px",color:"var(--cream3)",fontSize:10,cursor:"pointer"}}>x</button>
                 </div>)}
                 <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
                   {items.map((n,i)=>(<button key={"b"+i} onClick={()=>setMapQ(n+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,fontSize:10,cursor:"pointer",border:mapQ?.includes(n)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(n)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(n)?"var(--terra-l)":"var(--cream2)"}}>{n}</button>))}
                   {custom.map(c=>(<div key={c.id} style={{display:"flex",alignItems:"center",gap:0}}>
                     <button onClick={()=>setMapQ(c.name+", "+city.name+", Italy")} style={{padding:"4px 10px",fontSize:10,cursor:"pointer",border:mapQ?.includes(c.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(c.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(c.name)?"var(--terra-l)":"var(--cream2)",borderRadius:"6px 0 0 6px"}}>{c.name}</button>
-                    <button onClick={()=>setCpois(p=>p.filter(x=>x.id!==c.id))} style={{padding:"4px 6px",borderRadius:"0 6px 6px 0",border:"1px solid rgba(255,255,255,0.08)",borderLeft:"none",background:"var(--bg3)",color:"rgba(255,255,255,0.2)",fontSize:9,cursor:"pointer"}}>x</button>
+                    <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",c.id);await reloadPoi()})()}} style={{padding:"4px 6px",borderRadius:"0 6px 6px 0",border:"1px solid rgba(255,255,255,0.08)",borderLeft:"none",background:"var(--bg3)",color:"rgba(255,255,255,0.2)",fontSize:9,cursor:"pointer"}}>x</button>
                   </div>))}
                 </div>
               </div>);
@@ -261,7 +263,7 @@ export default function Page(){
             <input placeholder="Link (optioneel)" value={form.l} onChange={e=>setForm({...form,l:e.target.value})} style={inp}/>
             <input placeholder="Afbeelding URL (optioneel)" value={form.i} onChange={e=>setForm({...form,i:e.target.value})} style={inp}/>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>{if(!form.t)return;setMs(p=>[...p,{id:uid(),title:form.t,desc:form.d,link:form.l||undefined,img:form.i||undefined,done:false}]);setForm({t:"",d:"",l:"",i:""});setShowAdd(false)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,cursor:"pointer"}}>Opslaan</button>
+              <button onClick={()=>{if(!form.t)return;(async()=>{await supabase.from("travel_mustsee").insert({title:form.t,desc:form.d,link:form.l||null,img:form.i||null,done:false});await reloadMs()})();setForm({t:"",d:"",l:"",i:""});setShowAdd(false)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,cursor:"pointer"}}>Opslaan</button>
               <button onClick={()=>setShowAdd(false)} style={{background:"transparent",color:"var(--cream2)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer"}}>Annuleer</button>
             </div>
           </div>)}
@@ -269,12 +271,12 @@ export default function Page(){
             {m.img&&<div style={{width:56,height:56,borderRadius:10,backgroundImage:`url(${m.img})`,backgroundSize:"cover",backgroundPosition:"center",flexShrink:0}}/>}
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:14,fontWeight:600,color:"var(--cream)",display:"flex",alignItems:"center",gap:8}}>
-                <button onClick={()=>setMs(p=>p.map(x=>x.id===m.id?{...x,done:!x.done}:x))} style={{background:"none",border:"1px solid var(--cream3)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--terra-l)",flexShrink:0}}>{m.done?"\u2713":""}</button>
+                <button onClick={()=>{(async()=>{await supabase.from("travel_mustsee").update({done:!m.done}).eq("id",m.id);await reloadMs()})()}} style={{background:"none",border:"1px solid var(--cream3)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--terra-l)",flexShrink:0}}>{m.done?"\u2713":""}</button>
                 {m.link?<a href={m.link} target="_blank" rel="noreferrer" style={{color:"var(--terra-l)",textDecoration:"none"}}>{m.title}</a>:<span>{m.title}</span>}
               </div>
-              {m.desc&&<div style={{fontSize:12,color:"var(--cream2)",marginTop:4,lineHeight:1.4}}>{m.desc}</div>}
+              {m.description&&<div style={{fontSize:12,color:"var(--cream2)",marginTop:4,lineHeight:1.4}}>{m.description}</div>}
             </div>
-            <button onClick={()=>setMs(p=>p.filter(x=>x.id!==m.id))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
+            <button onClick={()=>{(async()=>{await supabase.from("travel_mustsee").delete().eq("id",m.id);await reloadMs()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
           </div>))}
         </div>)}
 
@@ -284,13 +286,13 @@ export default function Page(){
             <button onClick={()=>setAddTd(true)} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:10,padding:"8px 18px",fontSize:12,cursor:"pointer",fontWeight:600}}>+ Toevoegen</button>
           </div>
           {addTd&&(<div style={{background:"var(--bg2)",borderRadius:10,padding:14,marginBottom:14,border:"1px solid rgba(255,255,255,0.08)",display:"flex",gap:8}}>
-            <input placeholder="Wat moet er gebeuren?" value={tdTxt} onChange={e=>setTdTxt(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&tdTxt){setTodos(p=>[...p,{id:uid(),text:tdTxt,done:false}]);setTdTxt("");setAddTd(false)}}} style={{...inp,flex:1}}/>
-            <button onClick={()=>{if(!tdTxt)return;setTodos(p=>[...p,{id:uid(),text:tdTxt,done:false}]);setTdTxt("");setAddTd(false)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer",flexShrink:0}}>+</button>
+            <input placeholder="Wat moet er gebeuren?" value={tdTxt} onChange={e=>setTdTxt(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&tdTxt){(async()=>{await supabase.from("travel_todos").insert({text:tdTxt,done:false});await reloadTd()})();setTdTxt("");setAddTd(false)}}} style={{...inp,flex:1}}/>
+            <button onClick={()=>{if(!tdTxt)return;(async()=>{await supabase.from("travel_todos").insert({text:tdTxt,done:false});await reloadTd()})();setTdTxt("");setAddTd(false)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer",flexShrink:0}}>+</button>
           </div>)}
           {todos.map(t=>(<div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--bg2)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,0.04)",opacity:t.done?.45:1}}>
-            <button onClick={()=>setTodos(p=>p.map(x=>x.id===t.id?{...x,done:!x.done}:x))} style={{background:"none",border:"1px solid var(--cream3)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--terra-l)",flexShrink:0}}>{t.done?"\u2713":""}</button>
+            <button onClick={()=>{(async()=>{await supabase.from("travel_todos").update({done:!t.done}).eq("id",t.id);await reloadTd()})()}} style={{background:"none",border:"1px solid var(--cream3)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--terra-l)",flexShrink:0}}>{t.done?"\u2713":""}</button>
             <span style={{fontSize:14,color:"var(--cream)",flex:1,textDecoration:t.done?"line-through":"none"}}>{t.text}</span>
-            <button onClick={()=>setTodos(p=>p.filter(x=>x.id!==t.id))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
+            <button onClick={()=>{(async()=>{await supabase.from("travel_todos").delete().eq("id",t.id);await reloadTd()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
           </div>))}
           {todos.length===0&&!addTd&&<p style={{fontSize:13,color:"var(--cream3)",textAlign:"center",padding:40,fontStyle:"italic"}}>Nog geen items.</p>}
         </div>)}
