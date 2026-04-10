@@ -198,11 +198,22 @@ export default function Page(){
           <div style={{borderRadius:14,overflow:"hidden",marginBottom:24,border:"1px solid rgba(255,255,255,0.08)"}}>
             <iframe style={{width:"100%",height:280,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${city.lat},${city.lng}&zoom=${city.zoom}&maptype=roadmap`} allowFullScreen />
           </div>
-          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>
-            <button onClick={()=>setMapQ(city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(255,255,255,0.1)",background:mapQ===city.name+", Italy"?"rgba(196,112,75,0.15)":"var(--bg2)",color:"var(--cream2)",fontSize:10,cursor:"pointer"}}>Overzicht</button>
-            {[...city.spots,...city.restaurants.map(r=>({name:r.name,desc:r.type}))].map((p,i)=>(
-              <button key={i} onClick={()=>setMapQ(p.name+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.1)",background:mapQ?.includes(p.name)?"rgba(196,112,75,0.15)":"var(--bg2)",color:mapQ?.includes(p.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{p.name}</button>
-            ))}
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+              <button onClick={()=>setMapQ(city.name+", Italy")} style={{padding:"4px 12px",borderRadius:6,border:mapQ===city.name+", Italy"?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.1)",background:mapQ===city.name+", Italy"?"rgba(196,112,75,0.15)":"var(--bg2)",color:mapQ===city.name+", Italy"?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>Overzicht</button>
+            </div>
+            <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginTop:10,marginBottom:6,textTransform:"uppercase"}}>Cultuur & Bezienswaardigheden</div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
+              {city.spots.map((p,i)=>(<button key={"s"+i} onClick={()=>setMapQ(p.name+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(p.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(p.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{p.name}</button>))}
+            </div>
+            <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginBottom:6,textTransform:"uppercase"}}>Eten & Drinken</div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
+              {city.restaurants.map((r,i)=>(<button key={"r"+i} onClick={()=>setMapQ(r.name+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(r.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(r.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(r.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{r.name}</button>))}
+            </div>
+            <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginBottom:6,textTransform:"uppercase"}}>TikTok Viral</div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+              {city.viral.map((v,i)=>(<button key={"v"+i} onClick={()=>setMapQ(v.name+", "+city.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(v.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(v.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(v.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{v.name}</button>))}
+            </div>
           </div>
           <div style={{background:"rgba(196,112,75,0.08)",border:"1px solid rgba(196,112,75,0.15)",borderRadius:14,padding:"16px 18px",marginBottom:24}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:10}}>ALS EERSTE DOEN</div>
