@@ -71,6 +71,7 @@ export default function Page(){
   const[poiName,setPoiName]=useState("");
   const[poiCat,setPoiCat]=useState<"cultuur"|"eten"|"tiktok"|"overig">("cultuur");
   const city=cityId?C.find(c=>c.id===cityId):null;
+  useEffect(()=>{if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js")},[]);
   const openC=(id:string)=>{const c2=C.find(x=>x.id===id);setCityId(id);setView("city");setCtab("do");setShowCities(false);setMapQ(c2?c2.name+", Italy":"")};
   const inp:React.CSSProperties={background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"10px 12px",color:"var(--cream)",fontSize:14,fontFamily:"var(--sans)",outline:"none",width:"100%",boxSizing:"border-box"};
 
