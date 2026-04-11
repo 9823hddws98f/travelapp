@@ -324,7 +324,7 @@ export default function Page(){
                           <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button>
                         </div>
                       </div>)}
-                    </div>)})()}}
+                    </div>)})()}
                   </div>
                 </div>
               </div>)}
