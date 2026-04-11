@@ -140,6 +140,11 @@ export default function Page(){
         </div>
 
         <div style={{display:"flex",gap:6,marginBottom:12}}>
+          <button onClick={()=>{setView("hotels");setCityId(null)}} style={{width:"100%",padding:"10px 12px",borderRadius:"var(--r)",border:view==="hotels"?"1px solid var(--accent)":"1px solid var(--border)",background:view==="hotels"?"var(--accent3)":"var(--bg2)",color:"var(--text)",cursor:"pointer",fontSize:12,fontFamily:"var(--sans)",marginBottom:8,fontWeight:600,textAlign:"left"}}>
+            Overnachtingen
+            <span style={{fontSize:10,color:"var(--text3)",fontWeight:400,marginLeft:6}}>{sbDays.filter(d2=>d2.hotel).length} nachten</span>
+          </button>
+          <div style={{display:"flex",gap:8,marginBottom:16}}>
           <button onClick={()=>{setView("ms");setCityId(null)}} style={{flex:1,padding:"10px 8px",borderRadius:"var(--r)",border:view==="ms"?"1px solid var(--accent)":"1px solid var(--border)",background:view==="ms"?"var(--accent3)":"var(--bg2)",color:"var(--text)",cursor:"pointer",fontSize:11,fontFamily:"var(--sans)"}}>Must-See<br/><span style={{fontSize:10,color:"var(--text3)"}}>{ms.filter(m=>!m.done).length}</span></button>
           <button onClick={()=>{setView("td");setCityId(null)}} style={{flex:1,padding:"10px 8px",borderRadius:"var(--r)",border:view==="td"?"1px solid var(--accent)":"1px solid var(--border)",background:view==="td"?"var(--accent3)":"var(--bg2)",color:"var(--text)",cursor:"pointer",fontSize:11,fontFamily:"var(--sans)"}}>To-Do<br/><span style={{fontSize:10,color:"var(--text3)"}}>{todos.filter(t=>!t.done).length}</span></button>
         </div>
@@ -199,30 +204,38 @@ export default function Page(){
             </div>
 
             {/* Route */}
-            {(()=>{const R:Record<string,{stops:string[],km:string,hrs:string}>={
-              "Aankomst Venetie":{stops:["Schiphol","Marco Polo","Venetie"],km:"1600",hrs:"2u30"},
-              "Venetie naar Gardameer":{stops:["Venetie","Verona","Gardameer"],km:"180",hrs:"2u30"},
-              "Venetie en Verona":{stops:["Venetie","Verona","Gardameer"],km:"180",hrs:"3u"},
-              "Gardameer en Apuaanse Alpen":{stops:["Gardameer","Sirmione","Apuaanse Alpen"],km:"280",hrs:"3u30"},
-              "Gardameer naar Verona":{stops:["Gardameer","Verona"],km:"65",hrs:"45min"},
-              "Verona naar Toscane":{stops:["Verona","Bologna","Firenze"],km:"230",hrs:"2u30"},
-              "Toscane naar Napels":{stops:["Firenze","Roma","Napels"],km:"470",hrs:"4u30"},
-              "Amalfikust en terug":{stops:["Amalfi","Napels","Luchthaven"],km:"80",hrs:"1u30"},
-            };const r=R[d.title];return r?(<div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",padding:"14px 18px",marginBottom:16,boxShadow:"var(--shadow)"}}>
+            {(()=>{
+              const prev=sbDays.find(x=>x.day_num===d.day-1);
+              const prevCity=prev?C.find(x=>x.id===prev.city_id):null;
+              const curCity=c;
+              const KM:Record<string,Record<string,{km:number,hrs:string}>>={
+                "ven":{"gar":{km:180,hrs:"2u30"},"ver":{km:120,hrs:"1u30"},"tos":{km:260,hrs:"3u"}},
+                "gar":{"ver":{km:65,hrs:"45min"},"apu":{km:280,hrs:"3u30"},"tos":{km:200,hrs:"2u30"}},
+                "ver":{"tos":{km:230,hrs:"2u30"},"gar":{km:65,hrs:"45min"}},
+                "tos":{"nap":{km:470,hrs:"4u30"},"ver":{km:230,hrs:"2u30"}},
+                "apu":{"tos":{km:120,hrs:"1u30"},"ver":{km:200,hrs:"2u30"}},
+                "nap":{"ama":{km:65,hrs:"1u15"},"tos":{km:470,hrs:"4u30"}},
+                "ama":{"nap":{km:65,hrs:"1u15"}},
+              };
+              const isTravel=prevCity&&prevCity.id!==curCity.id;
+              const dist=isTravel&&KM[prevCity.id]?.[curCity.id];
+              const stops=d.title.includes("-")?d.title.split(/\s*-\s*/):isTravel?[prevCity.name,curCity.name]:null;
+              if(!stops||stops.length<2)return null;
+              return(<div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",padding:"14px 18px",marginBottom:16,boxShadow:"var(--shadow)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                <span style={{fontSize:10,fontWeight:700,color:"var(--text3)",letterSpacing:1,textTransform:"uppercase"}}>Rijschema</span>
-                <span style={{fontSize:12,color:"var(--text2)"}}>{r.km} km — {r.hrs}</span>
+                <span style={{fontSize:10,fontWeight:700,color:"var(--text3)",letterSpacing:1,textTransform:"uppercase"}}>Reisschema</span>
+                {dist&&<span style={{fontSize:12,color:"var(--text2)"}}>{dist.km} km — {dist.hrs}</span>}
               </div>
               <div style={{display:"flex",alignItems:"center"}}>
-                {r.stops.map((s,i)=>(<div key={i} style={{display:"flex",alignItems:"center",flex:i<r.stops.length-1?1:"0 0 auto"}}>
+                {stops.map((s,i)=>(<div key={i} style={{display:"flex",alignItems:"center",flex:i<stops.length-1?1:"0 0 auto"}}>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
-                    <div style={{width:i===0||i===r.stops.length-1?12:8,height:i===0||i===r.stops.length-1?12:8,borderRadius:"50%",background:i===0?"var(--accent)":i===r.stops.length-1?"#22c55e":"var(--bg4)",border:i===0?"2px solid var(--accent)":i===r.stops.length-1?"2px solid #22c55e":"2px solid var(--text3)"}}/>
-                    <div style={{fontSize:i===0||i===r.stops.length-1?10:9,color:i===0||i===r.stops.length-1?"var(--text)":"var(--text3)",marginTop:4,whiteSpace:"nowrap",fontWeight:i===0||i===r.stops.length-1?600:400}}>{s}</div>
+                    <div style={{width:i===0||i===stops.length-1?12:8,height:i===0||i===stops.length-1?12:8,borderRadius:"50%",background:i===0?"var(--accent)":i===stops.length-1?"#22c55e":"var(--bg4)",border:i===0?"2px solid var(--accent)":i===stops.length-1?"2px solid #22c55e":"2px solid var(--text3)"}}/>
+                    <div style={{fontSize:i===0||i===stops.length-1?10:9,color:i===0||i===stops.length-1?"var(--text)":"var(--text3)",marginTop:4,whiteSpace:"nowrap",fontWeight:i===0||i===stops.length-1?600:400}}>{s}</div>
                   </div>
-                  {i<r.stops.length-1&&<div style={{flex:1,height:2,background:"linear-gradient(90deg, var(--accent), var(--bg4))",margin:"0 6px",marginBottom:18,borderRadius:1}}/>}
+                  {i<stops.length-1&&<div style={{flex:1,height:2,background:"linear-gradient(90deg, var(--accent), var(--bg4))",margin:"0 6px",marginBottom:18,borderRadius:1}}/>}
                 </div>))}
               </div>
-            </div>):null})()}
+            </div>)})()}
 
             {/* Map */}
             <div style={{borderRadius:"var(--r2)",overflow:"hidden",marginBottom:20,border:"1px solid var(--border)",boxShadow:"var(--shadow2)"}}>
@@ -741,6 +754,22 @@ export default function Page(){
             </div>))}
             {notes.filter(n=>n.city_id===city.id).length===0&&!addNote&&<p style={{fontSize:13,color:"var(--text3)",textAlign:"center",padding:16,fontStyle:"italic"}}>Nog geen notities.</p>}
           </div>
+        </div>)}
+
+        {view==="hotels"&&(<div style={{animation:"fadeUp .3s ease"}}>
+          <h2 style={{fontSize:22,fontWeight:700,marginBottom:20,letterSpacing:-0.3}}>Overnachtingen</h2>
+          {sbDays.map(dy=>{const ct=C.find(x2=>x2.id===dy.city_id);const hNote=notes.find(n=>n.title==="hotel:"+dy.id);return dy.hotel?(<div key={dy.id} style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",marginBottom:12,overflow:"hidden"}}>
+            <div style={{display:"flex"}}>
+              <iframe style={{width:200,height:140,border:"none",display:"block",flexShrink:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(dy.hotel+", Italy")}`}/>
+              <div style={{flex:1,padding:"14px 18px"}}>
+                <div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Nacht {dy.day_num} — {dayDate(dy.day_num)}</div>
+                <div style={{fontSize:16,fontWeight:600,marginBottom:4}}>{dy.hotel}</div>
+                <div style={{fontSize:12,color:"var(--text2)",marginBottom:6}}>{ct?.name}, {ct?.region}</div>
+                <a href={dy.hotel_url||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dy.hotel+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",fontWeight:600}}>Open in Maps</a>
+                {hNote&&<div style={{marginTop:8,fontSize:12,color:"var(--text2)",padding:"6px 8px",background:"var(--bg)",borderRadius:6,border:"1px solid var(--border)"}}>{hNote.content}</div>}
+              </div>
+            </div>
+          </div>):null})}
         </div>)}
 
         {view==="ms"&&(<div style={{animation:"fadeUp .3s ease"}}>
