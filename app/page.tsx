@@ -78,6 +78,7 @@ export default function Page(){
   const[showE,setShowE]=useState(false);
   const[mapQ,setMapQ]=useState("");const[ctab,setCtab]=useState<"do"|"eat"|"viral"|"move"|"history"|"info"|"notes">("do");
   const[showCities,setShowCities]=useState(false);
+  const[showHotels,setShowHotels]=useState(false);
   const[cpois,setCpois,reloadPoi]=useSB<CustomPOI>("travel_custom_pois",[]);
   const[addPoi,setAddPoi]=useState<string|null>(null);
   const[expanded,setExpanded]=useState<{active?:string}>({});
@@ -137,6 +138,20 @@ export default function Page(){
               <span style={{fontSize:10,color:"var(--text3)",marginLeft:"auto"}}>{c.region}</span>
             </button>
           ))}
+        </div>
+
+        <div style={{marginBottom:16}}>
+          <button onClick={()=>setShowHotels(!showHotels)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",borderRadius:"var(--r)",border:"1px solid var(--border)",background:"var(--bg2)",color:"var(--text)",cursor:"pointer",fontSize:12,fontFamily:"var(--sans)"}}>
+            <span style={{fontWeight:600}}>Overnachtingen</span><span style={{color:"var(--text3)"}}>{showHotels?"\u25B2":"\u25BC"}</span>
+          </button>
+          {showHotels&&sbDays.filter(dy=>dy.hotel).map(dy=>{const ct2=C.find(x2=>x2.id===dy.city_id);return <div key={dy.id} onClick={()=>{setSelDay(dy.day_num);setView("plan");setExpanded({active:"plan"})}} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",cursor:"pointer",borderRadius:8,marginTop:2,background:selDay===dy.day_num?"var(--accent2)":"transparent"}}>
+              <span style={{width:20,height:20,borderRadius:6,background:ct2?.color||"var(--bg3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:600,color:"#fff",flexShrink:0}}>{dy.day_num}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{dy.hotel}</div>
+                <div style={{fontSize:9,color:"var(--text3)"}}>{dayDate(dy.day_num)} — {ct2?.name||""}</div>
+              </div>
+              <a href={dy.hotel_url||"https://maps.google.com/?q="+encodeURIComponent(dy.hotel+", Italy")} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0}}>Maps</a>
+            </div>})}
         </div>
 
         <div style={{display:"flex",gap:6,marginBottom:12}}>
