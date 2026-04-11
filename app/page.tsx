@@ -309,6 +309,22 @@ export default function Page(){
                         <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                       </div>
                     </div>):(<button onClick={()=>{setEditingDay("hotel");setDayForm({...dayForm,hotel:sd.hotel,hotel_url:sd.hotel_url||""})}} style={{marginTop:8,fontSize:11,color:"var(--text3)",background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"6px 10px",cursor:"pointer",width:"100%"}}>Hotel wijzigen</button>)}
+                    {(()=>{const hNote=notes.find(n=>n.title==="hotel:"+sd.id);return(<div style={{marginTop:10}}>
+                      {hNote?(<div style={{background:"var(--bg)",borderRadius:8,padding:"8px 10px",border:"1px solid var(--border)",fontSize:12}}>
+                        <div style={{color:"var(--text)",whiteSpace:"pre-wrap"}}>{hNote.content}</div>
+                        <div style={{display:"flex",gap:4,marginTop:6}}>
+                          <button onClick={()=>{setEditingDay("hnote");setNoteForm({t:"",c:hNote.content})}} style={{fontSize:10,color:"var(--accent)",background:"none",border:"none",cursor:"pointer"}}>Bewerken</button>
+                          <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",hNote.id);await reloadNotes()})()}} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer"}}>Verwijder</button>
+                        </div>
+                      </div>):editingDay==="hnote"?null:(<button onClick={()=>{setEditingDay("hnote");setNoteForm({t:"",c:""})}} style={{fontSize:10,color:"var(--text3)",background:"none",border:"1px dashed var(--border)",borderRadius:6,padding:"4px 8px",cursor:"pointer",width:"100%"}}>+ Notitie toevoegen</button>)}
+                      {editingDay==="hnote"&&(<div style={{marginTop:6,display:"flex",flexDirection:"column",gap:4}}>
+                        <textarea placeholder="Boekingsnummer, check-in tijd, wifi code..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,fontSize:12,minHeight:50,resize:"vertical",padding:"6px 8px"}}/>
+                        <div style={{display:"flex",gap:4}}>
+                          <button onClick={()=>{if(!noteForm.c)return;(async()=>{const existing=notes.find(n2=>n2.title==="hotel:"+sd.id);if(existing){await supabase.from("travel_notes").update({content:noteForm.c}).eq("id",existing.id)}else{await supabase.from("travel_notes").insert({city_id:c.id,title:"hotel:"+sd.id,content:noteForm.c})}await reloadNotes()})();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",fontSize:11,cursor:"pointer"}}>Opslaan</button>
+                          <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button>
+                        </div>
+                      </div>)}
+                    </div>)})()}}
                   </div>
                 </div>
               </div>)}
