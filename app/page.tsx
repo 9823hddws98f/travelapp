@@ -88,6 +88,7 @@ export default function Page(){
   const[dragStop,setDragStop]=useState<number|null>(null);
   const[dragDay,setDragDay]=useState<number|null>(null);
   const[editDesc,setEditDesc]=useState("");
+  const[hotelLoc,setHotelLoc]=useState("");
   const[editImg,setEditImg]=useState("");
   const[notes,setNotes,reloadNotes]=useSB<Note>("travel_notes",[]);
   const[addNote,setAddNote]=useState(false);
@@ -160,13 +161,13 @@ export default function Page(){
               </div>
               {editingDay==="sh-"+dy.id?<div style={{marginTop:6,display:"flex",flexDirection:"column",gap:4}}>
                 <input autoFocus value={dayForm.hotel} onChange={e=>setDayForm({...dayForm,hotel:e.target.value})} placeholder="Hotelnaam of adres..." style={{fontSize:11,border:"1px solid var(--accent)",borderRadius:6,padding:"5px 8px",outline:"none",background:"var(--bg)",color:"var(--text)",fontFamily:"var(--sans)",width:"100%"}}/>
-                <input value={dayForm.morning.join("")} onChange={e=>setDayForm({...dayForm,morning:[e.target.value]})} placeholder="Locatie / stad (vrij invullen)" style={{fontSize:10,border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",outline:"none",background:"var(--bg)",color:"var(--text2)",fontFamily:"var(--sans)",width:"100%"}}/>
+                <input value={hotelLoc} onChange={e=>setHotelLoc(e.target.value)} placeholder="Locatie / stad (vrij invullen)" style={{fontSize:10,border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",outline:"none",background:"var(--bg)",color:"var(--text2)",fontFamily:"var(--sans)",width:"100%"}}/>
                 <textarea value={dayForm.evening} onChange={e=>setDayForm({...dayForm,evening:e.target.value})} placeholder="Notitie (boekingsnr, wifi, check-in...)" style={{fontSize:10,border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",outline:"none",background:"var(--bg)",color:"var(--text2)",fontFamily:"var(--sans)",width:"100%",minHeight:36,resize:"vertical"}}/>
                 <div style={{display:"flex",gap:4}}>
-                  <button onClick={async()=>{await supabase.from("travel_days").update({hotel:dayForm.hotel,hotel_url:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(dayForm.hotel+", Italy")}).eq("id",dy.id);const noteContent=JSON.stringify({loc:dayForm.morning[0]||"",note:dayForm.evening||""});const ex=notes.find(n2=>n2.title==="hnote:"+dy.id);if(ex){await supabase.from("travel_notes").update({content:noteContent}).eq("id",ex.id)}else if(dayForm.morning[0]||dayForm.evening){await supabase.from("travel_notes").insert({city_id:dy.city_id,title:"hnote:"+dy.id,content:noteContent})}await loadDays();await reloadNotes();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",fontSize:10,cursor:"pointer",flex:1}}>Opslaan</button>
+                  <button onClick={async()=>{await supabase.from("travel_days").update({hotel:dayForm.hotel,hotel_url:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(dayForm.hotel+", Italy")}).eq("id",dy.id);const noteContent=JSON.stringify({loc:hotelLoc||"",note:dayForm.evening||""});const ex=notes.find(n2=>n2.title==="hnote:"+dy.id);if(ex){await supabase.from("travel_notes").update({content:noteContent}).eq("id",ex.id)}else if(hotelLoc||dayForm.evening){await supabase.from("travel_notes").insert({city_id:dy.city_id,title:"hnote:"+dy.id,content:noteContent})}await loadDays();await reloadNotes();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",fontSize:10,cursor:"pointer",flex:1}}>Opslaan</button>
                   <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:10,cursor:"pointer"}}>x</button>
                 </div>
-              </div>:<div onClick={()=>{const parsed=hNote?JSON.parse(hNote.content):{loc:"",note:""};setEditingDay("sh-"+dy.id);setDayForm({...dayForm,hotel:dy.hotel||"",morning:[parsed.loc||""],evening:parsed.note||""})}} style={{cursor:"pointer",marginTop:4}}>
+              </div>:<div onClick={()=>{const parsed=hNote?JSON.parse(hNote.content):{loc:"",note:""};setEditingDay("sh-"+dy.id);setDayForm({...dayForm,hotel:dy.hotel||"",evening:parsed.note||""});setHotelLoc(parsed.loc||"")}} style={{cursor:"pointer",marginTop:4}}>
                 {dy.hotel?<div style={{fontSize:11,color:"var(--text)",fontWeight:500}}>{dy.hotel}</div>:<div style={{fontSize:10,color:"var(--text3)",fontStyle:"italic"}}>Klik om hotel in te vullen</div>}
                 {hNote&&JSON.parse(hNote.content).loc?<div style={{fontSize:9,color:"var(--text3)"}}>{"\u2022 "+JSON.parse(hNote.content).loc}</div>:null}
                 {hNote&&JSON.parse(hNote.content).note?<div style={{fontSize:9,color:"var(--text2)",fontStyle:"italic",marginTop:1}}>{JSON.parse(hNote.content).note}</div>:null}
