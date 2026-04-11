@@ -85,6 +85,7 @@ export default function Page(){
   const[selPoi,setSelPoi]=useState<string|null>(null);
   const[editing,setEditing]=useState<string|null>(null);
   const[dragIdx,setDragIdx]=useState<{block:number,idx:number}|null>(null);
+  const[dragStop,setDragStop]=useState<number|null>(null);
   const[dragDay,setDragDay]=useState<number|null>(null);
   const[editDesc,setEditDesc]=useState("");
   const[editImg,setEditImg]=useState("");
