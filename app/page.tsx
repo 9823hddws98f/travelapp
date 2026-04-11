@@ -70,6 +70,7 @@ export default function Page(){
   const[showCities,setShowCities]=useState(false);
   const[cpois,setCpois,reloadPoi]=useSB<CustomPOI>("travel_custom_pois",[]);
   const[addPoi,setAddPoi]=useState<string|null>(null);
+  const[expanded,setExpanded]=useState<Record<string,boolean>>({});
   const[notes,setNotes,reloadNotes]=useSB<Note>("travel_notes",[]);
   const[addNote,setAddNote]=useState(false);
   const[noteForm,setNoteForm]=useState({t:"",c:""});
@@ -144,111 +145,103 @@ export default function Page(){
           </div>
         )}
 
-        {view==="plan"&&selDay&&(()=>{const d=DAYS.find(x=>x.day===selDay)!;const c=C.find(x=>x.id===d.cityId)!;return(
+        {view==="plan"&&selDay&&(()=>{const d=DAYS.find(x=>x.day===selDay)!;const c=C.find(x=>x.id===d.cityId)!;
+          const tog=(k:string)=>setExpanded(p=>({...p,[k]:!p[k]}));
+          const Section=({id,title,count,children}:{id:string,title:string,count:number,children:React.ReactNode})=>(
+            <div style={{marginBottom:2}}>
+              <button onClick={()=>tog(id)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:expanded[id]?"var(--r) var(--r) 0 0":"var(--r)",cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"var(--shadow)"}}>
+                <span style={{fontSize:14,fontWeight:600,color:"var(--text)"}}>{title}</span>
+                <span style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:12,color:"var(--text3)"}}>{count}</span>
+                  <span style={{fontSize:12,color:"var(--text3)",transition:"transform .2s",transform:expanded[id]?"rotate(180deg)":"rotate(0)"}}>{String.fromCharCode(9662)}</span>
+                </span>
+              </button>
+              {expanded[id]&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderTop:"none",borderRadius:"0 0 var(--r) var(--r)",padding:"8px",boxShadow:"var(--shadow)",marginBottom:8}}>{children}</div>}
+            </div>
+          );
+          return(
           <div style={{animation:"fadeUp .3s ease"}}>
-            {/* Header */}
-            <div style={{marginBottom:28,paddingBottom:20,borderBottom:"1px solid var(--border)"}}>
-              <div style={{display:"inline-block",background:"var(--accent2)",color:"var(--accent)",fontSize:11,fontWeight:600,padding:"4px 12px",borderRadius:8,marginBottom:10}}>Dag {d.day} van 10</div>
-              <h2 style={{fontSize:28,fontWeight:700,marginBottom:6,letterSpacing:-0.5}}>{d.title}</h2>
-              <p style={{fontSize:14,color:"var(--text2)"}}>{c.name}, {c.region}</p>
+            {/* Header - compact */}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:600,color:"var(--accent)"}}>Dag {d.day} / 10</div>
+                <h2 style={{fontSize:20,fontWeight:700,letterSpacing:-0.3}}>{d.title}</h2>
+              </div>
+              <button onClick={()=>openC(c.id)} style={{fontSize:12,color:"var(--accent)",background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontWeight:600,fontFamily:"var(--sans)"}}>{c.name}</button>
             </div>
 
             {/* Map */}
-            <div style={{borderRadius:"var(--r2)",overflow:"hidden",marginBottom:36,border:"1px solid var(--border)",boxShadow:"var(--shadow2)"}}>
-              <iframe style={{width:"100%",height:300,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
+            <div style={{borderRadius:"var(--r2)",overflow:"hidden",marginBottom:20,border:"1px solid var(--border)",boxShadow:"var(--shadow2)"}}>
+              <iframe style={{width:"100%",height:280,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
             </div>
 
-            {/* Planning */}
-            <div style={{marginBottom:36,paddingBottom:4}}>
-              <h3 style={{fontSize:17,fontWeight:700,color:"var(--text)",marginBottom:14,paddingLeft:12,borderLeft:"3px solid var(--accent)"}}>Planning</h3>
-              <div style={{padding:"18px 22px",background:"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:"1px solid var(--border)"}}>
-                <div style={{fontSize:11,fontWeight:600,color:"var(--text3)",letterSpacing:1,marginBottom:4}}>HOTEL</div>
-                <div style={{fontSize:15,fontWeight:500}}>{d.hotel}{d.hotelUrl&&<a href={d.hotelUrl} target="_blank" rel="noreferrer" style={{color:"var(--accent)",textDecoration:"none",fontSize:12,marginLeft:8}}>Maps</a>}</div>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-                <div style={{padding:"16px 18px",background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)"}}>
-                  <div style={{fontSize:11,fontWeight:600,color:"var(--accent)",letterSpacing:0.5,marginBottom:8}}>Ochtend</div>
-                  {d.morning.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text2)",padding:"2px 0"}}>{a}</div>)}
+            {/* Collapsible sections */}
+            <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:24}}>
+
+              {/* Planning */}
+              <Section id="plan" title="Planning" count={d.morning.length+d.afternoon.length+1}>
+                <div style={{padding:"10px 12px"}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"var(--text3)",marginBottom:4}}>Hotel</div>
+                  <div style={{fontSize:14,fontWeight:500,marginBottom:12}}>{d.hotel}{d.hotelUrl&&<a href={d.hotelUrl} target="_blank" rel="noreferrer" style={{color:"var(--accent)",textDecoration:"none",fontSize:12,marginLeft:6}}>Maps</a>}</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                    <div><div style={{fontSize:11,fontWeight:600,color:"var(--accent)",marginBottom:6}}>Ochtend</div>{d.morning.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text2)",padding:"2px 0"}}>{a}</div>)}</div>
+                    <div><div style={{fontSize:11,fontWeight:600,color:"var(--accent)",marginBottom:6}}>Middag</div>{d.afternoon.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text2)",padding:"2px 0"}}>{a}</div>)}</div>
+                  </div>
+                  <div style={{borderTop:"1px solid var(--border)",paddingTop:8}}><span style={{fontSize:11,fontWeight:600,color:"var(--text3)"}}>Avond: </span><span style={{fontSize:13,color:"var(--text)"}}>{d.evening}</span></div>
                 </div>
-                <div style={{padding:"16px 18px",background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)"}}>
-                  <div style={{fontSize:11,fontWeight:600,color:"var(--accent)",letterSpacing:0.5,marginBottom:8}}>Middag</div>
-                  {d.afternoon.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text2)",padding:"2px 0"}}>{a}</div>)}
-                </div>
-              </div>
-              <div style={{padding:"16px 18px",background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)"}}>
-                <div style={{fontSize:11,fontWeight:600,color:"var(--text3)",letterSpacing:0.5,marginBottom:4}}>Avond</div>
-                <div style={{fontSize:14,color:"var(--text)"}}>{d.evening}</div>
-              </div>
+              </Section>
+
+              {/* Cultuur */}
+              <Section id="spots" title="Cultuur & Bezienswaardigheden" count={c.spots.length+cpois.filter(p=>p.city_id===c.id&&p.cat==="cultuur").length}>
+                {c.spots.map((p,i)=>(<div key={i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{display:"flex",alignItems:"center",padding:"10px 12px",borderRadius:8,cursor:"pointer",background:mapQ?.includes(p.name)?"var(--accent3)":"transparent",transition:"all .1s"}}>
+                  <div style={{flex:1}}><div style={{fontSize:14,fontWeight:500,color:"var(--text)"}}>{p.name}</div><div style={{fontSize:12,color:"var(--text2)"}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:2}}>{p.tip}</div>}</div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                </div>))}
+                {cpois.filter(p=>p.city_id===c.id&&p.cat==="cultuur").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"8px 12px"}}>
+                  <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:13,cursor:"pointer",color:"var(--text)"}}>{p2.name}</span>
+                  <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
+                </div>))}
+                {addPoi==="c-day"?(<div style={{display:"flex",gap:6,padding:"6px 12px"}}><input placeholder="Plek toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"cultuur",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("c-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
+              </Section>
+
+              {/* Eten */}
+              <Section id="eat" title="Eten & Drinken" count={c.restaurants.length+cpois.filter(p=>p.city_id===c.id&&p.cat==="eten").length}>
+                {c.restaurants.map((r,i)=>(<div key={i} onClick={()=>setMapQ(r.name+", "+c.name+", Italy")} style={{display:"flex",alignItems:"center",padding:"10px 12px",borderRadius:8,cursor:"pointer",background:mapQ?.includes(r.name)?"var(--accent3)":"transparent",transition:"all .1s"}}>
+                  <div style={{flex:1}}><div style={{fontSize:14,fontWeight:500,color:"var(--text)"}}>{r.name} <span style={{color:"var(--accent)",fontSize:12}}>{r.price}</span></div><div style={{fontSize:12,color:"var(--text2)"}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:2}}>{r.tip}</div>}</div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                </div>))}
+                {cpois.filter(p=>p.city_id===c.id&&p.cat==="eten").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"8px 12px"}}>
+                  <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:13,cursor:"pointer",color:"var(--text)"}}>{p2.name}</span>
+                  <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
+                </div>))}
+                {addPoi==="e-day"?(<div style={{display:"flex",gap:6,padding:"6px 12px"}}><input placeholder="Restaurant toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"eten",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("e-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
+              </Section>
+
+              {/* TikTok */}
+              <Section id="viral" title="TikTok & Viral" count={c.viral.length+cpois.filter(p=>p.city_id===c.id&&p.cat==="tiktok").length}>
+                {c.viral.map((v,i)=>(<div key={i} onClick={()=>setMapQ(v.name+", "+c.name+", Italy")} style={{display:"flex",alignItems:"center",padding:"10px 12px",borderRadius:8,cursor:"pointer",background:mapQ?.includes(v.name)?"var(--accent3)":"transparent",transition:"all .1s"}}>
+                  <div style={{flex:1}}><div style={{fontSize:14,fontWeight:500,color:"var(--text)"}}>{v.name}</div><div style={{fontSize:12,color:"var(--text2)"}}>{v.desc}</div><div style={{fontSize:11,color:"var(--accent)",marginTop:2}}>{v.tag}</div></div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                </div>))}
+                {cpois.filter(p=>p.city_id===c.id&&p.cat==="tiktok").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"8px 12px"}}>
+                  <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:13,cursor:"pointer",color:"var(--text)"}}>{p2.name}</span>
+                  <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
+                </div>))}
+                {addPoi==="t-day"?(<div style={{display:"flex",gap:6,padding:"6px 12px"}}><input placeholder="Spot toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"tiktok",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("t-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
+              </Section>
+
+              {/* Vervoer */}
+              <Section id="move" title="Vervoer" count={c.transport.length}>
+                {c.transport.map((t,i)=>(<div key={i} style={{padding:"8px 12px",fontSize:13,color:"var(--text2)"}}>{t}</div>))}
+              </Section>
+
+              {/* Tips */}
+              <Section id="tips" title="Als eerste doen" count={c.firstSteps.length}>
+                {c.firstSteps.map((s,i)=><div key={i} style={{padding:"8px 12px",fontSize:13,color:"var(--text)",display:"flex",gap:8}}><span style={{color:"var(--accent)",fontWeight:700}}>{i+1}</span>{s}</div>)}
+              </Section>
             </div>
 
-            {/* Cultuur */}
-            <div style={{marginBottom:36,paddingBottom:4}}>
-              <h3 style={{fontSize:17,fontWeight:700,color:"var(--text)",marginBottom:14,paddingLeft:12,borderLeft:"3px solid var(--accent)"}}>Cultuur & Bezienswaardigheden</h3>
-              {c.spots.map((p,i)=>(<div key={i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{display:"flex",alignItems:"center",padding:"14px 16px",background:mapQ?.includes(p.name)?"var(--accent3)":"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:mapQ?.includes(p.name)?"1px solid var(--accent)":"1px solid var(--border)",boxShadow:mapQ?.includes(p.name)?"var(--shadow2)":"var(--shadow)",cursor:"pointer",transition:"all .15s"}}>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:600,color:"var(--text)"}}>{p.name}</div>
-                  <div style={{fontSize:13,color:"var(--text2)",marginTop:2}}>{p.desc}</div>
-                  {p.tip&&<div style={{fontSize:12,color:"var(--accent)",marginTop:4}}>{p.tip}</div>}
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-              </div>))}
-              {cpois.filter(p=>p.city_id===c.id&&p.cat==="cultuur").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"12px 16px",background:"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-                <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:14,cursor:"pointer",color:"var(--text)"}}>{p2.name}</span>
-                <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
-              </div>))}
-              {addPoi==="c-day"?(<div style={{display:"flex",gap:6}}><input placeholder="Plek toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"cultuur",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("c-day")} style={{width:"100%",padding:10,borderRadius:"var(--r)",border:"1px dashed var(--border)",background:"var(--bg2)",color:"var(--text2)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
-            </div>
-
-            {/* Eten */}
-            <div style={{marginBottom:36,paddingBottom:4}}>
-              <h3 style={{fontSize:17,fontWeight:700,color:"var(--text)",marginBottom:14,paddingLeft:12,borderLeft:"3px solid var(--accent)"}}>Eten & Drinken</h3>
-              {c.restaurants.map((r,i)=>(<div key={i} onClick={()=>setMapQ(r.name+", "+c.name+", Italy")} style={{display:"flex",alignItems:"center",padding:"14px 16px",background:mapQ?.includes(r.name)?"var(--accent3)":"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:mapQ?.includes(r.name)?"1px solid var(--accent)":"1px solid var(--border)",boxShadow:mapQ?.includes(r.name)?"var(--shadow2)":"var(--shadow)",cursor:"pointer",transition:"all .15s"}}>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:600,color:"var(--text)"}}>{r.name} <span style={{fontWeight:400,color:"var(--accent)",fontSize:13}}>{r.price}</span></div>
-                  <div style={{fontSize:13,color:"var(--text2)",marginTop:2}}>{r.type}</div>
-                  {r.tip&&<div style={{fontSize:12,color:"var(--accent)",marginTop:4}}>{r.tip}</div>}
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-              </div>))}
-              {cpois.filter(p=>p.city_id===c.id&&p.cat==="eten").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"12px 16px",background:"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-                <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:14,cursor:"pointer",color:"var(--text)"}}>{p2.name}</span>
-                <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
-              </div>))}
-              {addPoi==="e-day"?(<div style={{display:"flex",gap:6}}><input placeholder="Restaurant toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"eten",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("e-day")} style={{width:"100%",padding:10,borderRadius:"var(--r)",border:"1px dashed var(--border)",background:"var(--bg2)",color:"var(--text2)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
-            </div>
-
-            {/* TikTok */}
-            <div style={{marginBottom:36,paddingBottom:4}}>
-              <h3 style={{fontSize:17,fontWeight:700,color:"var(--text)",marginBottom:14,paddingLeft:12,borderLeft:"3px solid var(--accent)"}}>TikTok & Viral</h3>
-              {c.viral.map((v,i)=>(<div key={i} onClick={()=>setMapQ(v.name+", "+c.name+", Italy")} style={{display:"flex",alignItems:"center",padding:"14px 16px",background:mapQ?.includes(v.name)?"var(--accent3)":"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:mapQ?.includes(v.name)?"1px solid var(--accent)":"1px solid var(--border)",boxShadow:mapQ?.includes(v.name)?"var(--shadow2)":"var(--shadow)",cursor:"pointer",transition:"all .15s"}}>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:600,color:"var(--text)"}}>{v.name}</div>
-                  <div style={{fontSize:13,color:"var(--text2)",marginTop:2}}>{v.desc}</div>
-                  <div style={{fontSize:11,color:"var(--accent)",marginTop:4}}>{v.tag}</div>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-              </div>))}
-              {cpois.filter(p=>p.city_id===c.id&&p.cat==="tiktok").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"12px 16px",background:"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-                <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:14,cursor:"pointer",color:"var(--text)"}}>{p2.name}</span>
-                <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
-              </div>))}
-              {addPoi==="t-day"?(<div style={{display:"flex",gap:6}}><input placeholder="TikTok spot..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"tiktok",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("t-day")} style={{width:"100%",padding:10,borderRadius:"var(--r)",border:"1px dashed var(--border)",background:"var(--bg2)",color:"var(--text2)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
-            </div>
-
-            {/* Vervoer */}
-            <div style={{marginBottom:36,paddingBottom:4}}>
-              <h3 style={{fontSize:17,fontWeight:700,color:"var(--text)",marginBottom:14,paddingLeft:12,borderLeft:"3px solid var(--accent)"}}>Vervoer</h3>
-              {c.transport.map((t,i)=>(<div key={i} style={{padding:"12px 16px",background:"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:"1px solid var(--border)",boxShadow:"var(--shadow)",fontSize:14,color:"var(--text2)"}}>{t}</div>))}
-            </div>
-
-            {/* Tips */}
-            <div style={{marginBottom:36,paddingBottom:4}}>
-              <h3 style={{fontSize:17,fontWeight:700,color:"var(--text)",marginBottom:14,paddingLeft:12,borderLeft:"3px solid var(--accent)"}}>Als eerste doen</h3>
-              {c.firstSteps.map((s,i)=><div key={i} style={{padding:"12px 16px",background:"var(--bg2)",borderRadius:"var(--r)",marginBottom:8,border:"1px solid var(--border)",boxShadow:"var(--shadow)",fontSize:14,color:"var(--text)",display:"flex",gap:10}}><span style={{color:"var(--accent)",fontWeight:700,flexShrink:0}}>{i+1}</span>{s}</div>)}
-            </div>
-
-            {/* Stad bekijken button */}
-            <button onClick={()=>openC(c.id)} style={{width:"100%",padding:16,borderRadius:"var(--r)",background:"var(--accent)",border:"none",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"var(--sans)",marginBottom:20,boxShadow:"0 2px 8px rgba(191,107,67,0.25)"}}>{c.name} volledig bekijken</button>
+            <button onClick={()=>openC(c.id)} style={{width:"100%",padding:14,borderRadius:"var(--r)",background:"var(--accent)",border:"none",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"0 2px 8px rgba(191,107,67,0.25)"}}>{c.name} volledig bekijken</button>
           </div>
         )})()}
 
