@@ -9,6 +9,7 @@ interface City{id:string;name:string;region:string;color:string;lat:number;lng:n
 interface Day{day:number;title:string;cityId:string;hotel:string;hotelUrl?:string;morning:string[];afternoon:string[];evening:string;schedule:{time:string;what:string;type?:string}[]}
 interface MustSee{id:string;title:string;description:string;link?:string;img?:string;done:boolean}
 interface Todo{id:string;text:string;done:boolean}
+interface SBDay{id:string;day_num:number;title:string;city_id:string;hotel:string;hotel_url?:string;morning:string[];afternoon:string[];evening:string}
 interface Note{id:string;city_id:string;title:string;content:string}
 interface CustomPOI{id:string;name:string;cat:string;city_id:string;description?:string;img?:string}
 interface DayPoi{id:string;day:number;name:string;desc:string;link?:string}
@@ -47,6 +48,8 @@ const INIT_MS:MustSee[]=[
 const EMERG:Record<string,string>={"Algemeen":"112","Politie":"113","Ambulance":"118","Wegenwacht":"+39 803 116","NL Ambassade":"+39 06 3228 6001"};
 const PHRASES:Record<string,string>={"Hallo":"Ciao","Goedemorgen":"Buongiorno","Dank je":"Grazie","Alsjeblieft":"Per favore","Sorry":"Mi scusi","Hoeveel kost dit?":"Quanto costa?","De rekening":"Il conto, per favore","Waar is...?":"Dove si trova...?","Ik ben verdwaald":"Mi sono perso/a","Mag ik water?":"Posso avere dell\'acqua?","Lekker!":"Buonissimo!","Proost!":"Salute!","Ik spreek geen Italiaans":"Non parlo italiano","Links/rechts":"Sinistra/destra","Station":"La stazione"};
 const PACK:Record<string,string[]>={"ven":["Comfortabele wandelschoenen","Vaporetto dagpas kopen","Waterfles vullen","Powerbank opladen"],"gar":["Zwemkleding","Zonnebrand","Camera","Navigarda app checken"],"ver":["Verona Card kopen","Comfy schoenen","Cash voor gelato"],"tos":["Uffizi tickets checken","Auto huren bevestiging","ZTL zones vermijden","Zonnebrand"],"nap":["Cash! Veel plekken geen pin","Rugzak VOOR dragen","Pompei tickets","Waterfles"],"ama":["Goede wandelschoenen!","2L water meenemen","Zonnebrand","SITA bus kaartjes","Zwemkleding"],"apu":["Wandelschoenen","Auto tanken","Jas voor bergen","Water + snacks"]};
+const START_DATE=new Date("2026-04-17");
+const dayDate=(n:number)=>{const d=new Date(START_DATE);d.setDate(d.getDate()+n-1);return d.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});};
 const uid=()=>Math.random().toString(36).slice(2,8);
 
 function useSB<T extends {id:string}>(table:string,init:T[]):[T[],(v:T[]|((_:T[])=>T[]))=>void,()=>Promise<void>]{
@@ -58,6 +61,11 @@ function useSB<T extends {id:string}>(table:string,init:T[]):[T[],(v:T[]|((_:T[]
 }
 
 export default function Page(){
+  const[sbDays,setSbDays]=useState<SBDay[]>([]);
+  const[editingDay,setEditingDay]=useState<string|null>(null);
+  const[dayForm,setDayForm]=useState({title:"",city_id:"",hotel:"",hotel_url:"",morning:"",afternoon:"",evening:""});
+  const loadDays=useCallback(async()=>{const{data}=await supabase.from("travel_days").select("*").order("day_num",{ascending:true});if(data&&data.length>0)setSbDays(data as SBDay[]);else{const seed=DAYS.map((d,i)=>({day_num:i+1,title:d.title,city_id:d.cityId,hotel:d.hotel,hotel_url:d.hotelUrl||null,morning:d.morning,afternoon:d.afternoon,evening:d.evening}));await supabase.from("travel_days").insert(seed);const{data:d2}=await supabase.from("travel_days").select("*").order("day_num",{ascending:true});if(d2)setSbDays(d2 as SBDay[])}},[]);
+  useEffect(()=>{loadDays()},[loadDays]);
   const[selDay,setSelDay]=useState<number|null>(null);
   const[cityId,setCityId]=useState<string|null>(null);
   const[view,setView]=useState<"plan"|"city"|"ms"|"td">("plan");
@@ -137,31 +145,40 @@ export default function Page(){
             <h2 style={{fontFamily:"var(--sans)",fontSize:22,fontWeight:400,marginBottom:4}}>Reisplanning</h2>
             <p style={{fontSize:13,color:"var(--text2)",marginBottom:24}}>Selecteer een dag om details te zien.</p>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:10}}>
-              {DAYS.map(d=>{const c=C.find(x=>x.id===d.cityId)!;return(
-                <button key={d.day} onClick={()=>setSelDay(d.day)} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:"var(--r)",padding:16,cursor:"pointer",color:"var(--text)",textAlign:"left",fontFamily:"var(--sans)",boxShadow:"var(--shadow)",transition:"box-shadow .2s"}}>
+              {sbDays.map(d=>{const ct=C.find(x=>x.id===d.city_id);return(
+                <button key={d.id} onClick={()=>setSelDay(d.day_num)} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:"var(--r)",padding:16,cursor:"pointer",color:"var(--text)",textAlign:"left",fontFamily:"var(--sans)",boxShadow:"var(--shadow)",transition:"box-shadow .2s"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                    <span style={{background:"var(--accent2)",color:"var(--accent)",fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:8}}>DAG {d.day}</span>
-                    <span style={{width:10,height:10,borderRadius:5,background:c.color}}/>
+                    <span style={{background:"var(--accent2)",color:"var(--accent)",fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:8}}>DAG {d.day_num}</span>
+                    <span style={{fontSize:9,color:"var(--text3)"}}>{dayDate(d.day_num)}</span>
                   </div>
                   <div style={{fontSize:14,fontWeight:600,marginBottom:2}}>{d.title}</div>
-                  <div style={{fontSize:11,color:"var(--text3)"}}>{c.name}</div>
+                  <div style={{fontSize:11,color:"var(--text3)"}}>{ct?.name||"?"}</div>
                 </button>
               )})}
             </div>
           </div>
         )}
 
-        {view==="plan"&&selDay&&(()=>{const d=DAYS.find(x=>x.day===selDay)!;const c=C.find(x=>x.id===d.cityId)!;
+        {view==="plan"&&selDay&&(()=>{const sd=sbDays.find(x=>x.day_num===selDay);if(!sd)return null;const d={...sd,day:sd.day_num,cityId:sd.city_id,hotelUrl:sd.hotel_url};const c=C.find(x=>x.id===d.cityId)!;
           
           return(
           <div style={{animation:"fadeUp .3s ease"}}>
             {/* Header - compact */}
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <div>
-                <div style={{fontSize:11,fontWeight:600,color:"var(--accent)"}}>Dag {d.day} / 10</div>
-                <h2 style={{fontSize:20,fontWeight:700,letterSpacing:-0.3}}>{d.title}</h2>
+                <div style={{fontSize:11,fontWeight:600,color:"var(--accent)"}}>Dag {d.day} / {sbDays.length} — {dayDate(d.day)}</div>
+                {editingDay===sd.id?(<div style={{display:"flex",gap:6,marginTop:4}}>
+                  <input value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} style={{...inp,fontSize:16,fontWeight:700,padding:"4px 8px"}}/>
+                  <button onClick={async()=>{await supabase.from("travel_days").update({title:dayForm.title}).eq("id",sd.id);await loadDays();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"4px 12px",fontSize:12,cursor:"pointer"}}>OK</button>
+                  <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"4px 8px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
+                </div>):(<h2 onClick={()=>{setEditingDay(sd.id);setDayForm({...dayForm,title:sd.title})}} style={{fontSize:20,fontWeight:700,letterSpacing:-0.3,cursor:"pointer"}} title="Klik om te bewerken">{d.title}</h2>)}
               </div>
-              <button onClick={()=>openC(c.id)} style={{fontSize:12,color:"var(--accent)",background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontWeight:600,fontFamily:"var(--sans)"}}>{c.name}</button>
+              <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                <button onClick={()=>openC(c.id)} style={{fontSize:12,color:"var(--accent)",background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontWeight:600,fontFamily:"var(--sans)"}}>{c.name}</button>
+                {sbDays.length>1&&<button onClick={async()=>{if(!confirm("Dag verwijderen?"))return;await supabase.from("travel_days").delete().eq("id",sd.id);const remaining=sbDays.filter(x=>x.id!==sd.id);for(let i=0;i<remaining.length;i++){await supabase.from("travel_days").update({day_num:i+1}).eq("id",remaining[i].id)}await loadDays();setSelDay(null)}} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>Verwijder</button>}
+                {d.day>1&&<button onClick={async()=>{const prev=sbDays.find(x=>x.day_num===d.day-1);if(!prev)return;await supabase.from("travel_days").update({day_num:d.day}).eq("id",prev.id);await supabase.from("travel_days").update({day_num:d.day-1}).eq("id",sd.id);await loadDays();setSelDay(d.day-1)}} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"4px 8px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>↑</button>}
+                {d.day<sbDays.length&&<button onClick={async()=>{const next=sbDays.find(x=>x.day_num===d.day+1);if(!next)return;await supabase.from("travel_days").update({day_num:d.day}).eq("id",next.id);await supabase.from("travel_days").update({day_num:d.day+1}).eq("id",sd.id);await loadDays();setSelDay(d.day+1)}} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"4px 8px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>↓</button>}
+              </div>
             </div>
 
             {/* Map */}
