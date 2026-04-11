@@ -71,6 +71,7 @@ export default function Page(){
   const[cpois,setCpois,reloadPoi]=useSB<CustomPOI>("travel_custom_pois",[]);
   const[addPoi,setAddPoi]=useState<string|null>(null);
   const[expanded,setExpanded]=useState<{active?:string}>({});
+  const[selPoi,setSelPoi]=useState<string|null>(null);
   const[notes,setNotes,reloadNotes]=useSB<Note>("travel_notes",[]);
   const[addNote,setAddNote]=useState(false);
   const[noteForm,setNoteForm]=useState({t:"",c:""});
@@ -194,11 +195,21 @@ export default function Page(){
               </div>)}
 
               {expanded.active==="spots"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
-                {c.spots.map((p,i)=>(<div key={i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{padding:"10px 12px",borderRadius:8,cursor:"pointer",background:mapQ?.includes(p.name)?"var(--accent3)":"transparent",transition:"all .1s"}}>
-                  <div style={{fontSize:14,fontWeight:500}}>{p.name}</div>
-                  <div style={{fontSize:12,color:"var(--text2)"}}>{p.desc}</div>
-                  {p.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:2}}>{p.tip}</div>}
-                </div>))}
+                {c.spots.map((p,i)=>{const pk="s-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i}>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(p.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,cursor:"pointer",background:open?"var(--accent3)":"transparent",transition:"all .1s"}}>
+                    <span style={{width:22,height:22,borderRadius:11,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
+                    <div style={{flex:1,minWidth:0}}><div style={{fontSize:14,fontWeight:500}}>{p.name}</div><div style={{fontSize:12,color:"var(--text2)"}}>{p.desc}</div></div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={open?"var(--accent)":"var(--text3)"} strokeWidth="2" style={{flexShrink:0,transition:"transform .2s",transform:open?"rotate(90deg)":"rotate(0)"}}><path d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                  {open&&(<div style={{margin:"4px 0 8px 32px",background:"var(--bg)",borderRadius:"var(--r)",border:"1px solid var(--border)",overflow:"hidden",animation:"fadeUp .2s ease"}}>
+                    <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/>
+                    <div style={{padding:"12px 14px"}}>
+                      <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{p.name}</div>
+                      <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>{p.desc}</div>
+                      {p.tip&&<div style={{fontSize:11,color:"var(--accent)"}}>{p.tip}</div>}
+                    </div>
+                  </div>)}
+                </div>)})}
                 {cpois.filter(p=>p.city_id===c.id&&p.cat==="cultuur").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"8px 12px"}}>
                   <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:13,cursor:"pointer"}}>{p2.name}</span>
                   <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
@@ -207,11 +218,21 @@ export default function Page(){
               </div>)}
 
               {expanded.active==="eat"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
-                {c.restaurants.map((r,i)=>(<div key={i} onClick={()=>setMapQ(r.name+", "+c.name+", Italy")} style={{padding:"10px 12px",borderRadius:8,cursor:"pointer",background:mapQ?.includes(r.name)?"var(--accent3)":"transparent",transition:"all .1s"}}>
-                  <div style={{fontSize:14,fontWeight:500}}>{r.name} <span style={{color:"var(--accent)",fontSize:12}}>{r.price}</span></div>
-                  <div style={{fontSize:12,color:"var(--text2)"}}>{r.type}</div>
-                  {r.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:2}}>{r.tip}</div>}
-                </div>))}
+                {c.restaurants.map((r,i)=>{const pk="r-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i}>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(r.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,cursor:"pointer",background:open?"var(--accent3)":"transparent",transition:"all .1s"}}>
+                    <span style={{width:22,height:22,borderRadius:11,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
+                    <div style={{flex:1,minWidth:0}}><div style={{fontSize:14,fontWeight:500}}>{r.name} <span style={{color:"var(--accent)",fontSize:12}}>{r.price}</span></div><div style={{fontSize:12,color:"var(--text2)"}}>{r.type}</div></div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={open?"var(--accent)":"var(--text3)"} strokeWidth="2" style={{flexShrink:0,transition:"transform .2s",transform:open?"rotate(90deg)":"rotate(0)"}}><path d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                  {open&&(<div style={{margin:"4px 0 8px 32px",background:"var(--bg)",borderRadius:"var(--r)",border:"1px solid var(--border)",overflow:"hidden",animation:"fadeUp .2s ease"}}>
+                    <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/>
+                    <div style={{padding:"12px 14px"}}>
+                      <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{r.name}</div>
+                      <div style={{fontSize:12,color:"var(--text2)",marginBottom:2}}>{r.type} — {r.price}</div>
+                      {r.tip&&<div style={{fontSize:11,color:"var(--accent)"}}>{r.tip}</div>}
+                    </div>
+                  </div>)}
+                </div>)})}
                 {cpois.filter(p=>p.city_id===c.id&&p.cat==="eten").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"8px 12px"}}>
                   <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:13,cursor:"pointer"}}>{p2.name}</span>
                   <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
@@ -220,11 +241,21 @@ export default function Page(){
               </div>)}
 
               {expanded.active==="viral"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
-                {c.viral.map((v,i)=>(<div key={i} onClick={()=>setMapQ(v.name+", "+c.name+", Italy")} style={{padding:"10px 12px",borderRadius:8,cursor:"pointer",background:mapQ?.includes(v.name)?"var(--accent3)":"transparent",transition:"all .1s"}}>
-                  <div style={{fontSize:14,fontWeight:500}}>{v.name}</div>
-                  <div style={{fontSize:12,color:"var(--text2)"}}>{v.desc}</div>
-                  <div style={{fontSize:11,color:"var(--accent)",marginTop:2}}>{v.tag}</div>
-                </div>))}
+                {c.viral.map((v,i)=>{const pk="v-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i}>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(v.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,cursor:"pointer",background:open?"var(--accent3)":"transparent",transition:"all .1s"}}>
+                    <span style={{width:22,height:22,borderRadius:11,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
+                    <div style={{flex:1,minWidth:0}}><div style={{fontSize:14,fontWeight:500}}>{v.name}</div><div style={{fontSize:12,color:"var(--text2)"}}>{v.desc}</div></div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={open?"var(--accent)":"var(--text3)"} strokeWidth="2" style={{flexShrink:0,transition:"transform .2s",transform:open?"rotate(90deg)":"rotate(0)"}}><path d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                  {open&&(<div style={{margin:"4px 0 8px 32px",background:"var(--bg)",borderRadius:"var(--r)",border:"1px solid var(--border)",overflow:"hidden",animation:"fadeUp .2s ease"}}>
+                    <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(v.name+", "+c.name+", Italy")}`}/>
+                    <div style={{padding:"12px 14px"}}>
+                      <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{v.name}</div>
+                      <div style={{fontSize:12,color:"var(--text2)",marginBottom:2}}>{v.desc}</div>
+                      <div style={{fontSize:11,color:"var(--accent)"}}>{v.tag}</div>
+                    </div>
+                  </div>)}
+                </div>)})}
                 {addPoi==="t-day"?(<div style={{display:"flex",gap:6,padding:"6px 12px"}}><input placeholder="Toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"tiktok",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("t-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
               </div>)}
 
@@ -235,6 +266,44 @@ export default function Page(){
               {expanded.active==="tips"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:"12px 16px",animation:"fadeUp .2s ease"}}>
                 {c.firstSteps.map((s,i)=><div key={i} style={{padding:"6px 0",fontSize:13,display:"flex",gap:8}}><span style={{color:"var(--accent)",fontWeight:700}}>{i+1}</span>{s}</div>)}
               </div>)}
+            </div>
+
+            
+            {/* Stadsinfo */}
+            <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4,marginBottom:24}}>
+              <button onClick={()=>setExpanded(p=>({active:p.active==="hist"?undefined:"hist"}))} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:expanded.active==="hist"?"var(--r) var(--r) 0 0":"var(--r)",cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"var(--shadow)"}}>
+                <span style={{fontSize:14,fontWeight:600}}>Geschiedenis</span>
+                <span style={{fontSize:12,color:"var(--text3)",transform:expanded.active==="hist"?"rotate(180deg)":"rotate(0)",transition:"transform .2s"}}>{String.fromCharCode(9662)}</span>
+              </button>
+              {expanded.active==="hist"&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderTop:"none",borderRadius:"0 0 var(--r) var(--r)",padding:"16px 18px",boxShadow:"var(--shadow)",animation:"fadeUp .2s ease"}}><p style={{fontSize:14,lineHeight:1.8,color:"var(--text2)"}}>{c.history}</p></div>}
+
+              <button onClick={()=>setExpanded(p=>({active:p.active==="budget"?undefined:"budget"}))} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:expanded.active==="budget"?"var(--r) var(--r) 0 0":"var(--r)",cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"var(--shadow)"}}>
+                <span style={{fontSize:14,fontWeight:600}}>Budget & Veiligheid</span>
+                <span style={{fontSize:12,color:"var(--text3)",transform:expanded.active==="budget"?"rotate(180deg)":"rotate(0)",transition:"transform .2s"}}>{String.fromCharCode(9662)}</span>
+              </button>
+              {expanded.active==="budget"&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderTop:"none",borderRadius:"0 0 var(--r) var(--r)",padding:"16px 18px",boxShadow:"var(--shadow)",animation:"fadeUp .2s ease"}}>
+                <div style={{fontSize:12,fontWeight:600,color:"var(--accent)",marginBottom:6}}>Budget</div>
+                <p style={{fontSize:13,lineHeight:1.7,color:"var(--text2)",marginBottom:14}}>{c.budget}</p>
+                <div style={{fontSize:12,fontWeight:600,color:"var(--accent)",marginBottom:6}}>Veiligheid</div>
+                <p style={{fontSize:13,lineHeight:1.7,color:"var(--text2)"}}>{c.safety}</p>
+                {c.bookings&&<div style={{marginTop:14,borderTop:"1px solid var(--border)",paddingTop:10}}><div style={{fontSize:12,fontWeight:600,color:"var(--accent)",marginBottom:6}}>Boekingslinks</div>{c.bookings.map((b,i)=>{const parts=b.split(": ");return <a key={i} href={"https://"+parts[1]} target="_blank" rel="noreferrer" style={{display:"block",fontSize:13,color:"var(--accent)",textDecoration:"none",padding:"2px 0"}}>{parts[0]}</a>})}</div>}
+              </div>}
+
+              <button onClick={()=>setExpanded(p=>({active:p.active==="notes-d"?undefined:"notes-d"}))} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:expanded.active==="notes-d"?"var(--r) var(--r) 0 0":"var(--r)",cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"var(--shadow)"}}>
+                <span style={{fontSize:14,fontWeight:600}}>Notities</span>
+                <span style={{display:"flex",gap:6,alignItems:"center"}}><span style={{fontSize:12,color:"var(--text3)"}}>{notes.filter(n=>n.city_id===c.id).length}</span><span style={{fontSize:12,color:"var(--text3)",transform:expanded.active==="notes-d"?"rotate(180deg)":"rotate(0)",transition:"transform .2s"}}>{String.fromCharCode(9662)}</span></span>
+              </button>
+              {expanded.active==="notes-d"&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderTop:"none",borderRadius:"0 0 var(--r) var(--r)",padding:"12px 16px",boxShadow:"var(--shadow)",animation:"fadeUp .2s ease"}}>
+                {notes.filter(n=>n.city_id===c.id).map(n=>(<div key={n.id} style={{padding:"8px 0",borderBottom:"1px solid var(--border2)",display:"flex",alignItems:"flex-start",gap:8}}>
+                  <div style={{flex:1}}><div style={{fontSize:14,fontWeight:500}}>{n.title}</div>{n.content&&<div style={{fontSize:12,color:"var(--text2)",marginTop:2,whiteSpace:"pre-wrap"}}>{n.content}</div>}</div>
+                  <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",n.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer",padding:4}}>x</button>
+                </div>))}
+                {addNote?(<div style={{display:"flex",flexDirection:"column",gap:6,paddingTop:8}}>
+                  <input placeholder="Titel" value={noteForm.t} onChange={e=>setNoteForm({...noteForm,t:e.target.value})} style={inp}/>
+                  <textarea placeholder="Notitie..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical"}}/>
+                  <div style={{display:"flex",gap:6}}><button onClick={()=>{if(!noteForm.t)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:noteForm.t,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setAddNote(false)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button><button onClick={()=>setAddNote(false)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button></div>
+                </div>):(<button onClick={()=>setAddNote(true)} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer",marginTop:4}}>+ Notitie toevoegen</button>)}
+              </div>}
             </div>
 
             <button onClick={()=>openC(c.id)} style={{width:"100%",padding:14,borderRadius:"var(--r)",background:"var(--accent)",border:"none",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"0 2px 8px rgba(191,107,67,0.25)"}}>{c.name} volledig bekijken</button>
