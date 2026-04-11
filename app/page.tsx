@@ -327,14 +327,18 @@ export default function Page(){
                         <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)?.content}</div>
                         <button onClick={()=>{const nt=notes.find(n2=>n2.city_id===c.id&&n2.title==="poi:"+p.name);if(nt)(async()=>{await supabase.from("travel_notes").delete().eq("id",nt.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder</button>
                       </div>}
-                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)&&editing===pk&&<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
-                        <textarea placeholder="Beschrijving, links, tips..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
+                      {editing===pk&&<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Beschrijving, tips, links..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:50,resize:"vertical",fontSize:12}}/>
+                        <input placeholder="Afbeelding URL (plak link naar foto)" value={editImg} onChange={e=>setEditImg(e.target.value)} style={{...inp,fontSize:11,padding:"6px 8px"}}/>
                         <div style={{display:"flex",gap:6}}>
-                          <button onClick={()=>{if(!noteForm.c)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+p.name,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
-                          <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
+                          <button onClick={()=>{(async()=>{
+                            if(noteForm.c){const ex=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name);if(ex)await supabase.from("travel_notes").update({content:noteForm.c}).eq("id",ex.id);else await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+p.name,content:noteForm.c});await reloadNotes()}
+                            if(editImg){const ov=cpois.find(x=>x.cat==="overlay"&&x.name===p.name&&x.city_id===c.id);if(ov)await supabase.from("travel_custom_pois").update({img:editImg}).eq("id",ov.id);else await supabase.from("travel_custom_pois").insert({name:p.name,cat:"overlay",city_id:c.id,img:editImg});await reloadPoi()}
+                          })();setEditing(null);setEditImg("")}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
+                          <button onClick={()=>{setEditing(null);setEditImg("")}} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                         </div>
                       </div>}
-                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)&&editing!==pk&&<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving toevoegen</button>}
+                      {editing!==pk&&<button onClick={()=>{setEditing(pk);const nt=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name);setNoteForm({t:"",c:nt?.content||""});const ov=cpois.find(x=>x.cat==="overlay"&&x.name===p.name&&x.city_id===c.id);setEditImg(ov?.img||"")}} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>{notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)?"Bewerken":"+ Beschrijving / foto toevoegen"}</button>}
                     </div>
                   </div>)}
                 </div>)})}
