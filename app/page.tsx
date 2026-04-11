@@ -190,6 +190,14 @@ export default function Page(){
               </div>
             </div>
 
+            {/* Quick Actions */}
+            <div style={{display:"flex",gap:6,marginBottom:12,overflowX:"auto",paddingBottom:2}}>
+              <a href={d.hotelUrl||`https://maps.google.com/?q=${encodeURIComponent(d.hotel+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:"0 0 auto",display:"flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:20,background:"var(--bg2)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",color:"var(--text)",textDecoration:"none",fontSize:11,fontWeight:500}}>Navigeer</a>
+              <a href="https://translate.google.com/?sl=nl&tl=it" target="_blank" rel="noreferrer" style={{flex:"0 0 auto",display:"flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:20,background:"var(--bg2)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",color:"var(--text)",textDecoration:"none",fontSize:11,fontWeight:500}}>Vertalen</a>
+              <a href="tel:112" style={{flex:"0 0 auto",padding:"6px 12px",borderRadius:20,background:"var(--bg2)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",color:"var(--text)",textDecoration:"none",fontSize:11,fontWeight:500}}>112</a>
+              <a href={"https://www.google.com/search?q=weer+"+c.name+"+Italy"} target="_blank" rel="noreferrer" style={{flex:"0 0 auto",padding:"6px 12px",borderRadius:20,background:"var(--bg2)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",color:"var(--text)",textDecoration:"none",fontSize:11,fontWeight:500}}>Weer</a>
+            </div>
+
             {/* Map */}
             <div style={{borderRadius:"var(--r2)",overflow:"hidden",marginBottom:20,border:"1px solid var(--border)",boxShadow:"var(--shadow2)"}}>
               <iframe style={{width:"100%",height:280,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
