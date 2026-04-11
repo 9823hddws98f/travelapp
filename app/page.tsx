@@ -152,6 +152,13 @@ export default function Page(){
               <p style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:4}}>{c.name} / {c.region}</p>
             </div>
 
+            <div style={{display:"flex",gap:4,marginBottom:20,position:"sticky",top:0,zIndex:10,background:"var(--bg)",padding:"12px 0",borderBottom:"1px solid var(--border2)"}}>
+              {(["do","eat","viral","move"] as const).map(t=>(
+                <button key={t} onClick={()=>setCtab(t)} style={{flex:1,padding:"9px 4px",borderRadius:10,border:"none",background:ctab===t?"var(--bg3)":"transparent",color:ctab===t?"var(--text)":"var(--text3)",fontSize:12,fontWeight:ctab===t?600:400,cursor:"pointer",fontFamily:"var(--sans)",transition:"all .2s"}}>{t==="do"?"Spots":t==="eat"?"Eten":t==="viral"?"TikTok":"Vervoer"}</button>
+              ))}
+            </div>
+
+
             <p style={{fontSize:15,lineHeight:1.7,color:"var(--text2)",marginBottom:20,fontFamily:"var(--sans)",fontWeight:700,fontStyle:"italic"}}>{c.intro}</p>
 
             <div style={{borderRadius:"var(--r)",overflow:"hidden",marginBottom:20,border:"1px solid var(--border)"}}>
@@ -198,11 +205,7 @@ export default function Page(){
               {c.firstSteps.map((s,i)=><div key={i} style={{fontSize:13,color:"var(--text)",padding:"4px 0",display:"flex",gap:8}}><span style={{color:"var(--accent)",fontWeight:700,flexShrink:0}}>{i+1}.</span>{s}</div>)}
             </div>
 
-            <div style={{display:"flex",gap:6,marginBottom:16}}>
-              {(["do","eat","viral","move"] as const).map(t=>(
-                <button key={t} onClick={()=>setCtab(t)} style={{flex:1,padding:"8px 4px",borderRadius:8,border:ctab===t?"1.5px solid var(--accent)":"1px solid rgba(255,255,255,0.06)",background:ctab===t?"rgba(196,112,75,0.12)":"var(--bg2)",color:ctab===t?"var(--terra-l)":"var(--cream2)",fontSize:11,cursor:"pointer",fontFamily:"var(--sans)"}}>{t==="do"?"Bezienswaardigheden":t==="eat"?"Restaurants":t==="viral"?"TikTok Viral":"Vervoer"}</button>
-              ))}
-            </div>
+            
             {ctab==="do"&&c.spots.map((p,i)=>(<div key={i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{background:mapQ?.includes(p.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:"var(--r)",padding:"12px 14px",marginBottom:8,border:mapQ?.includes(p.name)?"1px solid var(--accent)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}><div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:3}}>{p.name}</div><div style={{fontSize:12,color:"var(--text2)",lineHeight:1.5}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:6}}>{p.tip}</div>}</div>))}
             {ctab==="eat"&&c.restaurants.map((r,i)=>(<div key={i} onClick={()=>setMapQ(r.name+", "+c.name+", Italy")} style={{background:mapQ?.includes(r.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:"var(--r)",padding:"12px 14px",marginBottom:8,border:mapQ?.includes(r.name)?"1px solid var(--accent)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}><div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:3}}>{r.name} <span style={{color:"var(--accent)",fontSize:12}}>{r.price}</span></div><div style={{fontSize:12,color:"var(--text2)"}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:6}}>{r.tip}</div>}</div>))}
             {ctab==="viral"&&c.viral.map((v,i)=>(<div key={i} style={{background:"var(--bg2)",borderRadius:"var(--r)",padding:"12px 14px",marginBottom:8,border:"1px solid var(--border2)"}}><div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:3}}>{v.name}</div><div style={{fontSize:12,color:"var(--text2)",lineHeight:1.5}}>{v.desc}</div><div style={{fontSize:10,color:"var(--accent)",marginTop:6}}>{v.tag}</div></div>))}
