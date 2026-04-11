@@ -142,16 +142,27 @@ export default function Page(){
 
         <div style={{marginBottom:16}}>
           <button onClick={()=>setShowHotels(!showHotels)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",borderRadius:"var(--r)",border:"1px solid var(--border)",background:"var(--bg2)",color:"var(--text)",cursor:"pointer",fontSize:12,fontFamily:"var(--sans)"}}>
-            <span style={{fontWeight:600}}>Overnachtingen</span><span style={{color:"var(--text3)"}}>{showHotels?"\u25B2":"\u25BC"}</span>
+            <span style={{fontWeight:600}}>Overnachtingen</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:10,color:"var(--text3)"}}>{sbDays.filter(dy=>dy.hotel).length}</span><span style={{color:"var(--text3)"}}>{showHotels?"\u25B2":"\u25BC"}</span></span>
           </button>
-          {showHotels&&sbDays.filter(dy=>dy.hotel).map(dy=>{const ct2=C.find(x2=>x2.id===dy.city_id);return <div key={dy.id} onClick={()=>{setSelDay(dy.day_num);setView("plan");setExpanded({active:"plan"})}} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",cursor:"pointer",borderRadius:8,marginTop:2,background:selDay===dy.day_num?"var(--accent2)":"transparent"}}>
-              <span style={{width:20,height:20,borderRadius:6,background:ct2?.color||"var(--bg3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:600,color:"#fff",flexShrink:0}}>{dy.day_num}</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{dy.hotel}</div>
-                <div style={{fontSize:9,color:"var(--text3)"}}>{dayDate(dy.day_num)} — {ct2?.name||""}</div>
+          {showHotels&&<div style={{marginTop:4}}>
+            {sbDays.map(dy=>{const ct2=C.find(x2=>x2.id===dy.city_id);const hNote=notes.find(n=>n.title==="hotel:"+dy.id);const booked=notes.some(n=>n.title==="booked:"+dy.id);return <div key={dy.id} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,marginBottom:6,padding:"10px 12px",boxShadow:"0 1px 3px rgba(0,0,0,0.03)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <button onClick={async()=>{if(booked){const bn=notes.find(n=>n.title==="booked:"+dy.id);if(bn){await supabase.from("travel_notes").delete().eq("id",bn.id);await reloadNotes()}}else{await supabase.from("travel_notes").insert({city_id:dy.city_id,title:"booked:"+dy.id,content:"1"});await reloadNotes()}}} style={{width:18,height:18,borderRadius:4,border:booked?"none":"1.5px solid var(--border)",background:booked?"#22c55e":"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,fontSize:11,color:"#fff"}}>{booked?"\u2713":""}</button>
+                <div style={{flex:1,minWidth:0,cursor:"pointer"}} onClick={()=>{setSelDay(dy.day_num);setView("plan");setExpanded({active:"plan"})}}>
+                  {dy.hotel?<div style={{fontSize:12,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{dy.hotel}</div>:<div style={{fontSize:11,color:"var(--text3)",fontStyle:"italic"}}>Geen hotel ingevuld</div>}
+                  <div style={{fontSize:9,color:"var(--text3)"}}>{dayDate(dy.day_num)} — {ct2?.name||""}</div>
+                </div>
+                {dy.hotel?<a href={dy.hotel_url||"https://maps.google.com/?q="+encodeURIComponent(dy.hotel+", Italy")} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0,fontWeight:600}}>Maps</a>:null}
               </div>
-              <a href={dy.hotel_url||"https://maps.google.com/?q="+encodeURIComponent(dy.hotel+", Italy")} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0}}>Maps</a>
+              {editingDay==="sh-"+dy.id?<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4}}>
+                <input value={dayForm.hotel} onChange={e=>setDayForm({...dayForm,hotel:e.target.value})} placeholder="Hotelnaam of adres..." style={{...inp,fontSize:11,padding:"6px 8px"}}/>
+                <div style={{display:"flex",gap:4}}>
+                  <button onClick={async()=>{await supabase.from("travel_days").update({hotel:dayForm.hotel,hotel_url:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(dayForm.hotel+", Italy")}).eq("id",dy.id);await loadDays();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 10px",fontSize:10,cursor:"pointer"}}>OK</button>
+                  <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:10,cursor:"pointer"}}>x</button>
+                </div>
+              </div>:<button onClick={()=>{setEditingDay("sh-"+dy.id);setDayForm({...dayForm,hotel:dy.hotel||""})}} style={{marginTop:6,width:"100%",fontSize:9,color:"var(--text3)",background:"none",border:"1px dashed var(--border)",borderRadius:6,padding:"3px 6px",cursor:"pointer"}}>{dy.hotel?"Wijzig":"+ Hotel invullen"}</button>}
             </div>})}
+          </div>}
         </div>
 
         <div style={{display:"flex",gap:6,marginBottom:12}}>
