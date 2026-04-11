@@ -105,16 +105,21 @@ export default function Page(){
         </div>
 
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,fontWeight:700,color:"var(--text3)",letterSpacing:2,marginBottom:8,textTransform:"uppercase"}}>10 Dagen</div>
-          {DAYS.map(d=>{const c=C.find(x=>x.id===d.cityId)!;const sel=selDay===d.day&&view==="plan";return(
-            <button key={d.day} onClick={()=>{setSelDay(sel?null:d.day);setView("plan");setCityId(null)}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:"var(--r)",border:"none",background:sel?"var(--accent2)":"transparent",color:"var(--text)",cursor:"pointer",textAlign:"left",fontFamily:"var(--sans)",marginBottom:1,transition:"all .15s"}}>
-              <span style={{width:26,height:26,borderRadius:8,background:sel?"var(--accent)":"var(--bg3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:600,color:sel?"#fff":"var(--text2)",flexShrink:0}}>{d.day}</span>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+            <span style={{fontSize:10,fontWeight:700,color:"var(--text3)",letterSpacing:2,textTransform:"uppercase"}}>{sbDays.length} Dagen</span>
+            <span style={{fontSize:9,color:"var(--text3)"}}>17 apr — {dayDate(sbDays.length)}</span>
+          </div>
+          {sbDays.map(d=>{const ct=C.find(x=>x.id===d.city_id);const sel=selDay===d.day_num&&view==="plan";return(
+            <button key={d.id} onClick={()=>{setSelDay(sel?null:d.day_num);setView("plan");setCityId(null)}} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderRadius:10,border:"none",background:sel?"var(--accent2)":"transparent",color:"var(--text)",cursor:"pointer",textAlign:"left",fontFamily:"var(--sans)",marginBottom:1,transition:"all .15s"}}>
+              <span style={{width:24,height:24,borderRadius:8,background:sel?"var(--accent)":"var(--bg3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:600,color:sel?"#fff":"var(--text2)",flexShrink:0}}>{d.day_num}</span>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,fontWeight:sel?600:400,color:sel?"var(--cream)":"var(--cream2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.title}</div>
+                <div style={{fontSize:12,fontWeight:sel?600:400,color:sel?"var(--text)":"var(--text2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.title}</div>
+                <div style={{fontSize:9,color:"var(--text3)"}}>{dayDate(d.day_num)}</div>
               </div>
-              <span style={{fontSize:10,color:"var(--text3)"}}>{c.name.slice(0,3)}</span>
+              <span style={{fontSize:9,color:"var(--text3)"}}>{ct?.name.slice(0,3)||"?"}</span>
             </button>
           )})}
+          <button onClick={async()=>{const num=sbDays.length+1;await supabase.from("travel_days").insert({day_num:num,title:"Nieuwe dag",city_id:C[0].id,hotel:"",morning:[],afternoon:[],evening:""});await loadDays()}} style={{width:"100%",padding:"7px 10px",borderRadius:10,border:"1px dashed var(--border)",background:"transparent",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>+ Dag toevoegen</button>
         </div>
 
         <div style={{marginBottom:16}}>
