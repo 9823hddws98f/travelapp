@@ -257,14 +257,22 @@ export default function Page(){
                     <button onClick={()=>{setEditingDay(editingDay==="route"?null:"route");setDayForm({...dayForm,title:d.title})}} style={{fontSize:9,color:"var(--accent)",background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"2px 8px",cursor:"pointer"}}>{editingDay==="route"?"x":"Wijzig"}</button>
                   </div>
                 </div>
-                {editingDay==="route"?<div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  <div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Voeg stops toe gescheiden door &quot; - &quot;</div>
-                  <div style={{display:"flex",gap:4}}>
-                    <input value={dayForm.title} onChange={e2=>setDayForm({...dayForm,title:e2.target.value})} placeholder="bv: Venetie - Verona - Gardameer" style={{...inp,fontSize:12,padding:"8px 10px",flex:1}}/>
-                    <button onClick={async()=>{await supabase.from("travel_days").update({title:dayForm.title}).eq("id",sd.id);await loadDays();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>OK</button>
+                {editingDay==="route"?<div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{fontSize:10,fontWeight:600,color:"var(--text3)"}}>Stops (klik om te verwijderen)</div>
+                  <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}}>
+                    {dayForm.title.split(" - ").filter(Boolean).map((st2:string,si2:number)=><div key={si2} style={{display:"flex",alignItems:"center",gap:2}}>
+                      {si2>0&&<span style={{fontSize:10,color:"var(--text3)"}}>→</span>}
+                      <button onClick={()=>{const arr=dayForm.title.split(" - ").filter(Boolean);arr.splice(si2,1);setDayForm({...dayForm,title:arr.join(" - ")})}} style={{fontSize:11,padding:"4px 10px",borderRadius:16,background:"var(--accent2)",border:"1px solid var(--accent)",color:"var(--accent)",cursor:"pointer",fontWeight:600,fontFamily:"var(--sans)",display:"flex",alignItems:"center",gap:4}}>{st2.trim()} <span style={{fontSize:9}}>✕</span></button>
+                    </div>)}
+                    {dayForm.title&&<span style={{fontSize:10,color:"var(--text3)"}}>→ ?</span>}
                   </div>
+                  <div style={{fontSize:10,fontWeight:600,color:"var(--text3)"}}>Voeg stop toe</div>
                   <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-                    {["Venetie","Verona","Gardameer","Apuaanse Alpen","Florence","Siena","Rome","Napoli","Amalfikust","Pompeii"].map(s2=><button key={s2} onClick={()=>setDayForm({...dayForm,title:dayForm.title?(dayForm.title+" - "+s2):s2})} style={{fontSize:10,padding:"3px 8px",borderRadius:12,border:"1px solid var(--border)",background:"var(--bg2)",color:"var(--text2)",cursor:"pointer"}}>{s2}</button>)}
+                    {["Venetie","Verona","Gardameer","Apuaanse Alpen","Florence","Siena","San Gimignano","Rome","Napoli","Pompeii","Amalfikust","Positano","Sorrento"].filter(s3=>!dayForm.title.includes(s3)).map(s2=><button key={s2} onClick={()=>setDayForm({...dayForm,title:dayForm.title?(dayForm.title+" - "+s2):s2})} style={{fontSize:10,padding:"4px 10px",borderRadius:16,border:"1px solid var(--border)",background:"var(--bg2)",color:"var(--text2)",cursor:"pointer",fontFamily:"var(--sans)"}}>{s2}</button>)}
+                  </div>
+                  <div style={{display:"flex",gap:4}}>
+                    <button onClick={async()=>{await supabase.from("travel_days").update({title:dayForm.title}).eq("id",sd.id);await loadDays();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,cursor:"pointer",fontWeight:600,flex:1}}>Opslaan</button>
+                    <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                   </div>
                 </div>:<div style={{display:"flex",alignItems:"center"}}>{stops.map((st:string,si:number)=><div key={si} style={{display:"flex",alignItems:"center",flex:si<stops.length-1?1:"0 0 auto"}}><div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}><div style={{width:si===0||si===stops.length-1?12:8,height:si===0||si===stops.length-1?12:8,borderRadius:"50%",background:si===0?"var(--accent)":si===stops.length-1?"#22c55e":"var(--bg4)",border:"2px solid "+(si===0?"var(--accent)":si===stops.length-1?"#22c55e":"var(--text3)")}}/><div style={{fontSize:10,color:si===0||si===stops.length-1?"var(--text)":"var(--text3)",marginTop:4,whiteSpace:"nowrap",fontWeight:si===0||si===stops.length-1?600:400}}>{st}</div></div>{si<stops.length-1?<div style={{flex:1,height:2,background:"var(--bg4)",margin:"0 6px",marginBottom:18,borderRadius:1}}/>:null}</div>)}</div>}
               </div>})()}
