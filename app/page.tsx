@@ -215,17 +215,19 @@ export default function Page(){
                       </div>
                       <div style={{fontSize:13,color:"var(--text2)",marginBottom:4}}>{p.desc}</div>
                       {p.tip&&<div style={{fontSize:12,color:"var(--accent)",marginBottom:8}}>{p.tip}</div>}
-                      {(()=>{const note=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name);return note?(<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
+                      {notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)&&<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
                         <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>Eigen notitie:</div>
-                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{note.content}</div>
-                        <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",note.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
-                      </div>):editing===pk?(<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
-                        <textarea placeholder="Jouw beschrijving, links, tips..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
+                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)?.content}</div>
+                        <button onClick={()=>{const nt=notes.find(n2=>n2.city_id===c.id&&n2.title==="poi:"+p.name);if(nt)(async()=>{await supabase.from("travel_notes").delete().eq("id",nt.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder</button>
+                      </div>}
+                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)&&editing===pk&&<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Beschrijving, links, tips..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
                         <div style={{display:"flex",gap:6}}>
                           <button onClick={()=>{if(!noteForm.c)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+p.name,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
                           <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                         </div>
-                      </div>):(<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving, link of notitie toevoegen</button>))})()}
+                      </div>}
+                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name)&&editing!==pk&&<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving toevoegen</button>}
                     </div>
                   </div>)}
                 </div>)})}
@@ -259,17 +261,19 @@ export default function Page(){
                       </div>
                       <div style={{fontSize:13,color:"var(--text2)",marginBottom:4}}>{r.type}</div>
                       {r.tip&&<div style={{fontSize:12,color:"var(--accent)",marginBottom:8}}>{r.tip}</div>}
-                      {(()=>{const note=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+r.name);return note?(<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
+                      {notes.find(n=>n.city_id===c.id&&n.title==="poi:"+r.name)&&<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
                         <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>Eigen notitie:</div>
-                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{note.content}</div>
-                        <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",note.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
-                      </div>):editing===pk?(<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
-                        <textarea placeholder="Jouw review, reserveringslink, tips..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
+                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{notes.find(n=>n.city_id===c.id&&n.title==="poi:"+r.name)?.content}</div>
+                        <button onClick={()=>{const n=notes.find(n2=>n2.city_id===c.id&&n2.title==="poi:"+r.name);if(n)(async()=>{await supabase.from("travel_notes").delete().eq("id",n.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
+                      </div>}
+                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+r.name)&&editing===pk&&<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Review, reserveringslink..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
                         <div style={{display:"flex",gap:6}}>
                           <button onClick={()=>{if(!noteForm.c)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+r.name,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
                           <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                         </div>
-                      </div>):(<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving of reserveringslink toevoegen</button>))})()}
+                      </div>}
+                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+r.name)&&editing!==pk&&<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving toevoegen</button>}
                     </div>
                   </div>)}
                 </div>)})}
@@ -303,17 +307,19 @@ export default function Page(){
                       </div>
                       <div style={{fontSize:13,color:"var(--text2)",marginBottom:2}}>{v.desc}</div>
                       <div style={{fontSize:11,color:"var(--accent)",marginBottom:8}}>{v.tag}</div>
-                      {(()=>{const note=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+v.name);return note?(<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
+                      {notes.find(n=>n.city_id===c.id&&n.title==="poi:"+v.name)&&<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
                         <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>Eigen notitie:</div>
-                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{note.content}</div>
-                        <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",note.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
-                      </div>):editing===pk?(<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
-                        <textarea placeholder="Jouw notitie, TikTok link..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
+                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{notes.find(n=>n.city_id===c.id&&n.title==="poi:"+v.name)?.content}</div>
+                        <button onClick={()=>{const n=notes.find(n2=>n2.city_id===c.id&&n2.title==="poi:"+v.name);if(n)(async()=>{await supabase.from("travel_notes").delete().eq("id",n.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
+                      </div>}
+                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+v.name)&&editing===pk&&<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Notitie, TikTok link..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
                         <div style={{display:"flex",gap:6}}>
                           <button onClick={()=>{if(!noteForm.c)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+v.name,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
                           <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                         </div>
-                      </div>):(<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Notitie of TikTok link toevoegen</button>))})()}
+                      </div>}
+                      {!notes.find(n=>n.city_id===c.id&&n.title==="poi:"+v.name)&&editing!==pk&&<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Notitie toevoegen</button>}
                     </div>
                   </div>)}
                 </div>)})}
