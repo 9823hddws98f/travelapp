@@ -10,7 +10,7 @@ interface Day{day:number;title:string;cityId:string;hotel:string;hotelUrl?:strin
 interface MustSee{id:string;title:string;description:string;link?:string;img?:string;done:boolean}
 interface Todo{id:string;text:string;done:boolean}
 interface Note{id:string;city_id:string;title:string;content:string}
-interface CustomPOI{id:string;name:string;cat:string;city_id:string}
+interface CustomPOI{id:string;name:string;cat:string;city_id:string;description?:string}
 interface DayPoi{id:string;day:number;name:string;desc:string;link?:string}
 
 const C:City[]=[
@@ -215,10 +215,17 @@ export default function Page(){
                   </div>)}
                 </div>)})}
                 {cpois.filter(p=>p.city_id===c.id&&p.cat==="cultuur").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"8px 12px"}}>
-                  <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:13,cursor:"pointer"}}>{p2.name}</span>
+                  <div onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,cursor:"pointer"}}><div style={{fontSize:13}}>{p2.name}</div>{p2.description&&<div style={{fontSize:11,color:"var(--text2)",marginTop:1}}>{p2.description}</div>}</div>
                   <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
                 </div>))}
-                {addPoi==="c-day"?(<div style={{display:"flex",gap:6,padding:"6px 12px"}}><input placeholder="Toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"cultuur",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("c-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
+                {addPoi==="c-day"?(<div style={{padding:"8px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <input placeholder="Naam..." value={poiName} onChange={e=>setPoiName(e.target.value)} style={{...inp,fontSize:13}}/>
+                  <input placeholder="Beschrijving (optioneel)" value={form.d} onChange={e=>setForm({...form,d:e.target.value})} style={{...inp,fontSize:12}}/>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"cultuur",city_id:c.id,description:form.d||""});await reloadPoi()})();setPoiName("");setForm({...form,d:""});setAddPoi(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Toevoegen</button>
+                    <button onClick={()=>{setAddPoi(null);setPoiName("")}} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>Annuleer</button>
+                  </div>
+                </div>):(<button onClick={()=>setAddPoi("c-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
               </div>)}
 
               {expanded.active==="eat"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
@@ -238,10 +245,17 @@ export default function Page(){
                   </div>)}
                 </div>)})}
                 {cpois.filter(p=>p.city_id===c.id&&p.cat==="eten").map(p2=>(<div key={p2.id} style={{display:"flex",alignItems:"center",padding:"8px 12px"}}>
-                  <span onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,fontSize:13,cursor:"pointer"}}>{p2.name}</span>
+                  <div onClick={()=>setMapQ(p2.name+", "+c.name+", Italy")} style={{flex:1,cursor:"pointer"}}><div style={{fontSize:13}}>{p2.name}</div>{p2.description&&<div style={{fontSize:11,color:"var(--text2)",marginTop:1}}>{p2.description}</div>}</div>
                   <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",p2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>x</button>
                 </div>))}
-                {addPoi==="e-day"?(<div style={{display:"flex",gap:6,padding:"6px 12px"}}><input placeholder="Toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"eten",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("e-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
+                {addPoi==="e-day"?(<div style={{padding:"8px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <input placeholder="Restaurant naam..." value={poiName} onChange={e=>setPoiName(e.target.value)} style={{...inp,fontSize:13}}/>
+                  <input placeholder="Beschrijving (optioneel)" value={form.d} onChange={e=>setForm({...form,d:e.target.value})} style={{...inp,fontSize:12}}/>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"eten",city_id:c.id,description:form.d||""});await reloadPoi()})();setPoiName("");setForm({...form,d:""});setAddPoi(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Toevoegen</button>
+                    <button onClick={()=>{setAddPoi(null);setPoiName("")}} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>Annuleer</button>
+                  </div>
+                </div>):(<button onClick={()=>setAddPoi("e-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
               </div>)}
 
               {expanded.active==="viral"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
@@ -260,7 +274,14 @@ export default function Page(){
                     </div>
                   </div>)}
                 </div>)})}
-                {addPoi==="t-day"?(<div style={{display:"flex",gap:6,padding:"6px 12px"}}><input placeholder="Toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"tiktok",city_id:c.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={inp}/><button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button></div>):(<button onClick={()=>setAddPoi("t-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
+                {addPoi==="t-day"?(<div style={{padding:"8px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <input placeholder="TikTok spot..." value={poiName} onChange={e=>setPoiName(e.target.value)} style={{...inp,fontSize:13}}/>
+                  <input placeholder="Beschrijving (optioneel)" value={form.d} onChange={e=>setForm({...form,d:e.target.value})} style={{...inp,fontSize:12}}/>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"tiktok",city_id:c.id,description:form.d||""});await reloadPoi()})();setPoiName("");setForm({...form,d:""});setAddPoi(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Toevoegen</button>
+                    <button onClick={()=>{setAddPoi(null);setPoiName("")}} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>Annuleer</button>
+                  </div>
+                </div>):(<button onClick={()=>setAddPoi("t-day")} style={{width:"100%",padding:8,background:"transparent",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Toevoegen</button>)}
               </div>)}
 
               {expanded.active==="move"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:"12px 16px",animation:"fadeUp .2s ease"}}>
