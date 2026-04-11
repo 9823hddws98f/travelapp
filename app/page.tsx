@@ -203,8 +203,8 @@ export default function Page(){
 
               {expanded.active==="spots"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
                 {c.spots.filter(p=>!cpois.some(x=>x.cat==="hidden"&&x.name===p.name&&x.city_id===c.id)).map((p,i)=>{const pk="s-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg2)",borderRadius:10,border:"1px solid var(--border)",marginBottom:4,boxShadow:"0 1px 3px rgba(0,0,0,0.04)",overflow:"hidden"}}>
-                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(p.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",cursor:"pointer"}}>
-                    <span style={{width:20,height:20,borderRadius:10,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:10,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(p.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",cursor:"pointer"}}>
+                    <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(p.name+", "+c.name+", Italy")}&zoom=16&size=48x48&scale=2&maptype=roadmap&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{width:36,height:36,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
                     <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:600}}>{p.name} <span style={{fontWeight:400,color:"var(--text3)",fontSize:12}}>— {p.desc}</span></div></div>
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:p.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:"2px 6px",flexShrink:0,lineHeight:1}}>x</button>
                   </div>
@@ -249,8 +249,8 @@ export default function Page(){
 
               {expanded.active==="eat"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
                 {c.restaurants.filter(r=>!cpois.some(x=>x.cat==="hidden"&&x.name===r.name&&x.city_id===c.id)).map((r,i)=>{const pk="r-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg2)",borderRadius:10,border:"1px solid var(--border)",marginBottom:4,boxShadow:"0 1px 3px rgba(0,0,0,0.04)",overflow:"hidden"}}>
-                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(r.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",cursor:"pointer"}}>
-                    <span style={{width:20,height:20,borderRadius:10,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:10,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(r.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",cursor:"pointer"}}>
+                    <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(r.name+", "+c.name+", Italy")}&zoom=16&size=48x48&scale=2&maptype=roadmap&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{width:36,height:36,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
                     <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:600}}>{r.name} <span style={{fontWeight:400,color:"var(--text3)",fontSize:12}}>— {r.type} {r.price}</span></div></div>
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:r.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:"2px 6px",flexShrink:0,lineHeight:1}}>x</button>
                   </div>
@@ -295,8 +295,8 @@ export default function Page(){
 
               {expanded.active==="viral"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
                 {c.viral.filter(v=>!cpois.some(x=>x.cat==="hidden"&&x.name===v.name&&x.city_id===c.id)).map((v,i)=>{const pk="v-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg2)",borderRadius:10,border:"1px solid var(--border)",marginBottom:4,boxShadow:"0 1px 3px rgba(0,0,0,0.04)",overflow:"hidden"}}>
-                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(v.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",cursor:"pointer"}}>
-                    <span style={{width:20,height:20,borderRadius:10,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:10,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(v.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",cursor:"pointer"}}>
+                    <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(v.name+", "+c.name+", Italy")}&zoom=16&size=48x48&scale=2&maptype=roadmap&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{width:36,height:36,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
                     <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:600}}>{v.name} <span style={{fontWeight:400,color:"var(--text3)",fontSize:12}}>— {v.desc}</span></div></div>
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:v.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:"2px 6px",flexShrink:0,lineHeight:1}}>x</button>
                   </div>
