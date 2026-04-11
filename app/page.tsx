@@ -311,7 +311,10 @@ export default function Page(){
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:p.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:"2px 6px",flexShrink:0,lineHeight:1}}>x</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
-                    <iframe style={{width:"100%",height:180,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/>
+                    <div style={{display:"flex",height:180}}>
+                      <iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/>
+                      {(()=>{const ov=cpois.find(x=>x.cat==="overlay"&&x.name===p.name&&x.city_id===c.id);return <img src={ov?.img||`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(p.name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={p.name}/>})()}
+                    </div>
                     <div style={{padding:"14px 16px"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                         <div style={{fontSize:15,fontWeight:600}}>{p.name}</div>
@@ -357,7 +360,10 @@ export default function Page(){
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:r.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:"2px 6px",flexShrink:0,lineHeight:1}}>x</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
-                    <iframe style={{width:"100%",height:180,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/>
+                    <div style={{display:"flex",height:180}}>
+                      <iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/>
+                      {(()=>{const ov=cpois.find(x=>x.cat==="overlay"&&x.name===r.name&&x.city_id===c.id);return <img src={ov?.img||`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(r.name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={r.name}/>})()}
+                    </div>
                     <div style={{padding:"14px 16px"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                         <div style={{fontSize:15,fontWeight:600}}>{r.name} <span style={{fontWeight:400,color:"var(--accent)",fontSize:13}}>{r.price}</span></div>
@@ -403,7 +409,10 @@ export default function Page(){
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:v.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:"2px 6px",flexShrink:0,lineHeight:1}}>x</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
-                    <iframe style={{width:"100%",height:180,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(v.name+", "+c.name+", Italy")}`}/>
+                    <div style={{display:"flex",height:180}}>
+                      <iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(v.name+", "+c.name+", Italy")}`}/>
+                      <img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(v.name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={v.name}/>
+                    </div>
                     <div style={{padding:"14px 16px"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                         <div style={{fontSize:15,fontWeight:600}}>{v.name}</div>
