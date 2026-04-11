@@ -207,11 +207,25 @@ export default function Page(){
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:p.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"var(--bg3)",border:"none",color:"var(--text2)",fontSize:11,cursor:"pointer",padding:"4px 10px",borderRadius:6,flexShrink:0,fontWeight:500,fontFamily:"var(--sans)"}}>Verwijder</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
-                    <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/>
-                    <div style={{padding:"12px 14px"}}>
-                      <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{p.name}</div>
-                      <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>{p.desc}</div>
-                      {p.tip&&<div style={{fontSize:11,color:"var(--accent)"}}>{p.tip}</div>}
+                    <iframe style={{width:"100%",height:180,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/>
+                    <div style={{padding:"14px 16px"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                        <div style={{fontSize:15,fontWeight:600}}>{p.name}</div>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",fontWeight:600,background:"var(--accent2)",padding:"4px 10px",borderRadius:6}}>Open in Maps</a>
+                      </div>
+                      <div style={{fontSize:13,color:"var(--text2)",marginBottom:4}}>{p.desc}</div>
+                      {p.tip&&<div style={{fontSize:12,color:"var(--accent)",marginBottom:8}}>{p.tip}</div>}
+                      {(()=>{const note=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+p.name);return note?(<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
+                        <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>Eigen notitie:</div>
+                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{note.content}</div>
+                        <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",note.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
+                      </div>):editing===pk?(<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Jouw beschrijving, links, tips..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
+                        <div style={{display:"flex",gap:6}}>
+                          <button onClick={()=>{if(!noteForm.c)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+p.name,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
+                          <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
+                        </div>
+                      </div>):(<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving, link of notitie toevoegen</button>))})()}
                     </div>
                   </div>)}
                 </div>)})}
@@ -237,11 +251,25 @@ export default function Page(){
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:r.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"var(--bg3)",border:"none",color:"var(--text2)",fontSize:11,cursor:"pointer",padding:"4px 10px",borderRadius:6,flexShrink:0,fontWeight:500,fontFamily:"var(--sans)"}}>Verwijder</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
-                    <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/>
-                    <div style={{padding:"12px 14px"}}>
-                      <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{r.name}</div>
-                      <div style={{fontSize:12,color:"var(--text2)",marginBottom:2}}>{r.type} — {r.price}</div>
-                      {r.tip&&<div style={{fontSize:11,color:"var(--accent)"}}>{r.tip}</div>}
+                    <iframe style={{width:"100%",height:180,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/>
+                    <div style={{padding:"14px 16px"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                        <div style={{fontSize:15,fontWeight:600}}>{r.name} <span style={{fontWeight:400,color:"var(--accent)",fontSize:13}}>{r.price}</span></div>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",fontWeight:600,background:"var(--accent2)",padding:"4px 10px",borderRadius:6}}>Open in Maps</a>
+                      </div>
+                      <div style={{fontSize:13,color:"var(--text2)",marginBottom:4}}>{r.type}</div>
+                      {r.tip&&<div style={{fontSize:12,color:"var(--accent)",marginBottom:8}}>{r.tip}</div>}
+                      {(()=>{const note=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+r.name);return note?(<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
+                        <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>Eigen notitie:</div>
+                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{note.content}</div>
+                        <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",note.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
+                      </div>):editing===pk?(<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Jouw review, reserveringslink, tips..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
+                        <div style={{display:"flex",gap:6}}>
+                          <button onClick={()=>{if(!noteForm.c)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+r.name,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
+                          <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
+                        </div>
+                      </div>):(<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving of reserveringslink toevoegen</button>))})()}
                     </div>
                   </div>)}
                 </div>)})}
@@ -267,11 +295,25 @@ export default function Page(){
                     <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:v.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"var(--bg3)",border:"none",color:"var(--text2)",fontSize:11,cursor:"pointer",padding:"4px 10px",borderRadius:6,flexShrink:0,fontWeight:500,fontFamily:"var(--sans)"}}>Verwijder</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
-                    <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(v.name+", "+c.name+", Italy")}`}/>
-                    <div style={{padding:"12px 14px"}}>
-                      <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{v.name}</div>
-                      <div style={{fontSize:12,color:"var(--text2)",marginBottom:2}}>{v.desc}</div>
-                      <div style={{fontSize:11,color:"var(--accent)"}}>{v.tag}</div>
+                    <iframe style={{width:"100%",height:180,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(v.name+", "+c.name+", Italy")}`}/>
+                    <div style={{padding:"14px 16px"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                        <div style={{fontSize:15,fontWeight:600}}>{v.name}</div>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",fontWeight:600,background:"var(--accent2)",padding:"4px 10px",borderRadius:6}}>Open in Maps</a>
+                      </div>
+                      <div style={{fontSize:13,color:"var(--text2)",marginBottom:2}}>{v.desc}</div>
+                      <div style={{fontSize:11,color:"var(--accent)",marginBottom:8}}>{v.tag}</div>
+                      {(()=>{const note=notes.find(n=>n.city_id===c.id&&n.title==="poi:"+v.name);return note?(<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",marginTop:8,border:"1px solid var(--border)"}}>
+                        <div style={{fontSize:12,color:"var(--text2)",marginBottom:4}}>Eigen notitie:</div>
+                        <div style={{fontSize:13,whiteSpace:"pre-wrap"}}>{note.content}</div>
+                        <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",note.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
+                      </div>):editing===pk?(<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Jouw notitie, TikTok link..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,minHeight:60,resize:"vertical",fontSize:13}}/>
+                        <div style={{display:"flex",gap:6}}>
+                          <button onClick={()=>{if(!noteForm.c)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+v.name,content:noteForm.c});await reloadNotes()})();setNoteForm({t:"",c:""});setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
+                          <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
+                        </div>
+                      </div>):(<button onClick={()=>setEditing(pk)} style={{marginTop:8,background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"8px",width:"100%",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Notitie of TikTok link toevoegen</button>))})()}
                     </div>
                   </div>)}
                 </div>)})}
