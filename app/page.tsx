@@ -153,11 +153,20 @@ export default function Page(){
             <div style={{borderRadius:10,overflow:"hidden",marginBottom:20,border:"1px solid rgba(255,255,255,0.08)"}}>
               <iframe style={{width:"100%",height:200,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
             </div>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
-              <button onClick={()=>setMapQ(c.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(255,255,255,0.1)",background:!mapQ||mapQ===c.name+", Italy"?"rgba(196,112,75,0.15)":"var(--bg2)",color:"var(--cream2)",fontSize:10,cursor:"pointer"}}>Overzicht</button>
-              {[...c.spots,...c.restaurants.map(r=>({name:r.name,desc:r.type}))].map((p,i)=>(
-                <button key={i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.1)",background:mapQ?.includes(p.name)?"rgba(196,112,75,0.15)":"var(--bg2)",color:mapQ?.includes(p.name)?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer"}}>{p.name}</button>
-              ))}
+            <div style={{marginBottom:20}}>
+              <button onClick={()=>setMapQ(c.name+", Italy")} style={{padding:"4px 12px",borderRadius:6,border:mapQ===c.name+", Italy"?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.1)",background:mapQ===c.name+", Italy"?"rgba(196,112,75,0.15)":"var(--bg2)",color:mapQ===c.name+", Italy"?"var(--terra-l)":"var(--cream2)",fontSize:10,cursor:"pointer",marginBottom:10}}>Overzicht</button>
+              <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginTop:8,marginBottom:6,textTransform:"uppercase"}}>Cultuur & Bezienswaardigheden</div>
+              <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
+                {c.spots.map((p,i)=>(<button key={"s"+i} onClick={()=>setMapQ(p.name+", "+c.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,fontSize:10,cursor:"pointer",border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(p.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(p.name)?"var(--terra-l)":"var(--cream2)"}}>{p.name}</button>))}
+              </div>
+              <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginBottom:6,textTransform:"uppercase"}}>Eten & Drinken</div>
+              <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
+                {c.restaurants.map((r,i)=>(<button key={"r"+i} onClick={()=>setMapQ(r.name+", "+c.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,fontSize:10,cursor:"pointer",border:mapQ?.includes(r.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(r.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(r.name)?"var(--terra-l)":"var(--cream2)"}}>{r.name}</button>))}
+              </div>
+              <div style={{fontSize:9,fontWeight:700,color:"var(--cream3)",letterSpacing:2,marginBottom:6,textTransform:"uppercase"}}>TikTok Viral</div>
+              <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                {c.viral.map((v,i)=>(<button key={"v"+i} onClick={()=>setMapQ(v.name+", "+c.name+", Italy")} style={{padding:"4px 10px",borderRadius:6,fontSize:10,cursor:"pointer",border:mapQ?.includes(v.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.08)",background:mapQ?.includes(v.name)?"rgba(196,112,75,0.15)":"var(--bg3)",color:mapQ?.includes(v.name)?"var(--terra-l)":"var(--cream2)"}}>{v.name}</button>))}
+              </div>
             </div>
 
             <div style={{background:"var(--bg2)",borderRadius:10,padding:"12px 14px",marginBottom:16,border:"1px solid rgba(255,255,255,0.06)"}}>
