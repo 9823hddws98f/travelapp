@@ -10,7 +10,7 @@ interface Day{day:number;title:string;cityId:string;hotel:string;hotelUrl?:strin
 interface MustSee{id:string;title:string;description:string;link?:string;img?:string;done:boolean}
 interface Todo{id:string;text:string;done:boolean}
 interface Note{id:string;city_id:string;title:string;content:string}
-interface CustomPOI{id:string;name:string;cat:string;city_id:string;description?:string}
+interface CustomPOI{id:string;name:string;cat:string;city_id:string;description?:string;img?:string}
 interface DayPoi{id:string;day:number;name:string;desc:string;link?:string}
 
 const C:City[]=[
@@ -75,6 +75,8 @@ export default function Page(){
   const[expanded,setExpanded]=useState<{active?:string}>({});
   const[selPoi,setSelPoi]=useState<string|null>(null);
   const[editing,setEditing]=useState<string|null>(null);
+  const[editDesc,setEditDesc]=useState("");
+  const[editImg,setEditImg]=useState("");
   const[notes,setNotes,reloadNotes]=useSB<Note>("travel_notes",[]);
   const[addNote,setAddNote]=useState(false);
   const[noteForm,setNoteForm]=useState({t:"",c:""});
