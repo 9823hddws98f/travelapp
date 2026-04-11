@@ -261,14 +261,17 @@ export default function Page(){
                               </div>
                               {(()=>{const noteKey="act:"+sd.id+":"+bi+":"+i;const nt=notes.find(n=>n.title===noteKey);return(<>
                                 {nt&&<div style={{background:"var(--bg2)",borderRadius:8,padding:"8px 10px",marginBottom:6,border:"1px solid var(--border)"}}>
-                                  <div style={{fontSize:12,color:"var(--text)",whiteSpace:"pre-wrap"}}>{nt.content}</div>
+                                  <div style={{fontSize:12,color:"var(--text)",whiteSpace:"pre-wrap"}}>{nt.content.includes("[IMG]")?nt.content.split("\n[IMG]")[0]:nt.content}</div>
+                                  {nt.content.includes("[IMG]")&&<img src={nt.content.split("[IMG]")[1]} style={{width:"100%",maxHeight:150,objectFit:"cover",borderRadius:8,marginTop:6}} alt=""/>}
                                   <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",nt.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:10,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
                                 </div>}
-                                {editingDay==="note-"+bi+"-"+i?(<div style={{display:"flex",flexDirection:"column",gap:4}}>
-                                  <textarea placeholder="Beschrijving, tips, links..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,fontSize:12,minHeight:50,resize:"vertical",padding:"6px 8px"}}/>
+                                {editingDay==="note-"+bi+"-"+i?(<div style={{display:"flex",flexDirection:"column",gap:6}}>
+                                  <textarea placeholder="Beschrijving, tips, links..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,fontSize:12,minHeight:50,resize:"vertical",padding:"8px 10px"}}/>
+                                  <input placeholder="Afbeelding URL (plak link naar foto)" value={noteForm.t} onChange={e=>setNoteForm({...noteForm,t:e.target.value})} style={{...inp,fontSize:11,padding:"6px 10px"}}/>
+                                  {noteForm.t&&noteForm.t.startsWith("http")&&<img src={noteForm.t} style={{width:"100%",maxHeight:120,objectFit:"cover",borderRadius:8}} alt="preview"/>}
                                   <div style={{display:"flex",gap:4}}>
-                                    <button onClick={()=>{if(!noteForm.c)return;(async()=>{if(nt){await supabase.from("travel_notes").update({content:noteForm.c}).eq("id",nt.id)}else{await supabase.from("travel_notes").insert({city_id:c.id,title:noteKey,content:noteForm.c})}await reloadNotes()})();setEditingDay(null);setNoteForm({t:"",c:""})}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",fontSize:11,cursor:"pointer"}}>Opslaan</button>
-                                    <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button>
+                                    <button onClick={()=>{if(!noteForm.c&&!noteForm.t)return;const content=noteForm.t?noteForm.c+"\n[IMG]"+noteForm.t:noteForm.c;(async()=>{if(nt){await supabase.from("travel_notes").update({content}).eq("id",nt.id)}else{await supabase.from("travel_notes").insert({city_id:c.id,title:noteKey,content})}await reloadNotes()})();setEditingDay(null);setNoteForm({t:"",c:""})}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
+                                    <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                                   </div>
                                 </div>):(!nt&&<button onClick={()=>{setEditingDay("note-"+bi+"-"+i);setNoteForm({t:"",c:""})}} style={{width:"100%",padding:6,borderRadius:6,border:"1px dashed var(--border)",background:"transparent",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>+ Beschrijving toevoegen</button>)}
                               </>)})()}
@@ -294,13 +297,16 @@ export default function Page(){
                       Open in Maps
                     </a>
                     {editingDay==="hotel"?(<div style={{marginTop:10,display:"flex",flexDirection:"column",gap:6}}>
-                      <input placeholder="Hotel naam" value={dayForm.hotel} onChange={e=>setDayForm({...dayForm,hotel:e.target.value})} style={{...inp,fontSize:12,padding:"6px 8px"}}/>
-                      <input placeholder="Maps URL (optioneel)" value={dayForm.hotel_url} onChange={e=>setDayForm({...dayForm,hotel_url:e.target.value})} style={{...inp,fontSize:11,padding:"6px 8px"}}/>
+                      <input placeholder="Zoek hotel of adres..." value={dayForm.hotel} onChange={e=>setDayForm({...dayForm,hotel:e.target.value,hotel_url:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.target.value+", Italy")}`})} style={{...inp,fontSize:13,padding:"8px 10px"}}/>
+                      {dayForm.hotel.length>3&&(<div style={{borderRadius:8,overflow:"hidden",border:"1px solid var(--border)"}}>
+                        <iframe style={{width:"100%",height:120,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(dayForm.hotel+", Italy")}`}/>
+                      </div>)}
+                      <div style={{fontSize:10,color:"var(--text3)"}}>Klopt de locatie op de kaart? Pas de naam aan tot het juiste adres verschijnt.</div>
                       <div style={{display:"flex",gap:4}}>
-                        <button onClick={async()=>{await supabase.from("travel_days").update({hotel:dayForm.hotel,hotel_url:dayForm.hotel_url||null}).eq("id",sd.id);await loadDays();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",fontSize:11,cursor:"pointer"}}>Opslaan</button>
-                        <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button>
+                        <button onClick={async()=>{await supabase.from("travel_days").update({hotel:dayForm.hotel,hotel_url:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dayForm.hotel+", Italy")}`}).eq("id",sd.id);await loadDays();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer",flex:1}}>Bevestig locatie</button>
+                        <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
                       </div>
-                    </div>):(<button onClick={()=>{setEditingDay("hotel");setDayForm({...dayForm,hotel:sd.hotel,hotel_url:sd.hotel_url||""})}} style={{marginTop:8,fontSize:10,color:"var(--text3)",background:"none",border:"1px dashed var(--border)",borderRadius:6,padding:"4px 10px",cursor:"pointer",width:"100%"}}>Hotel wijzigen</button>)}
+                    </div>):(<button onClick={()=>{setEditingDay("hotel");setDayForm({...dayForm,hotel:sd.hotel,hotel_url:sd.hotel_url||""})}} style={{marginTop:8,fontSize:11,color:"var(--text3)",background:"none",border:"1px dashed var(--border)",borderRadius:8,padding:"6px 10px",cursor:"pointer",width:"100%"}}>Hotel wijzigen</button>)}
                   </div>
                 </div>
               </div>)}
