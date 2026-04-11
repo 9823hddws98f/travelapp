@@ -198,6 +198,32 @@ export default function Page(){
               <a href={"https://www.google.com/search?q=weer+"+c.name+"+Italy"} target="_blank" rel="noreferrer" style={{flex:"0 0 auto",padding:"6px 12px",borderRadius:20,background:"var(--bg2)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",color:"var(--text)",textDecoration:"none",fontSize:11,fontWeight:500}}>Weer</a>
             </div>
 
+            {/* Route */}
+            {(()=>{const R:Record<string,{stops:string[],km:string,hrs:string}>={
+              "Aankomst Venetie":{stops:["Schiphol","Marco Polo","Venetie"],km:"1600",hrs:"2u30"},
+              "Venetie naar Gardameer":{stops:["Venetie","Verona","Gardameer"],km:"180",hrs:"2u30"},
+              "Venetie en Verona":{stops:["Venetie","Verona","Gardameer"],km:"180",hrs:"3u"},
+              "Gardameer en Apuaanse Alpen":{stops:["Gardameer","Sirmione","Apuaanse Alpen"],km:"280",hrs:"3u30"},
+              "Gardameer naar Verona":{stops:["Gardameer","Verona"],km:"65",hrs:"45min"},
+              "Verona naar Toscane":{stops:["Verona","Bologna","Firenze"],km:"230",hrs:"2u30"},
+              "Toscane naar Napels":{stops:["Firenze","Roma","Napels"],km:"470",hrs:"4u30"},
+              "Amalfikust en terug":{stops:["Amalfi","Napels","Luchthaven"],km:"80",hrs:"1u30"},
+            };const r=R[d.title];return r?(<div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",padding:"14px 18px",marginBottom:16,boxShadow:"var(--shadow)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <span style={{fontSize:10,fontWeight:700,color:"var(--text3)",letterSpacing:1,textTransform:"uppercase"}}>Rijschema</span>
+                <span style={{fontSize:12,color:"var(--text2)"}}>{r.km} km — {r.hrs}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center"}}>
+                {r.stops.map((s,i)=>(<div key={i} style={{display:"flex",alignItems:"center",flex:i<r.stops.length-1?1:"0 0 auto"}}>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
+                    <div style={{width:i===0||i===r.stops.length-1?12:8,height:i===0||i===r.stops.length-1?12:8,borderRadius:"50%",background:i===0?"var(--accent)":i===r.stops.length-1?"#22c55e":"var(--bg4)",border:i===0?"2px solid var(--accent)":i===r.stops.length-1?"2px solid #22c55e":"2px solid var(--text3)"}}/>
+                    <div style={{fontSize:i===0||i===r.stops.length-1?10:9,color:i===0||i===r.stops.length-1?"var(--text)":"var(--text3)",marginTop:4,whiteSpace:"nowrap",fontWeight:i===0||i===r.stops.length-1?600:400}}>{s}</div>
+                  </div>
+                  {i<r.stops.length-1&&<div style={{flex:1,height:2,background:"linear-gradient(90deg, var(--accent), var(--bg4))",margin:"0 6px",marginBottom:18,borderRadius:1}}/>}
+                </div>))}
+              </div>
+            </div>):null})()}
+
             {/* Map */}
             <div style={{borderRadius:"var(--r2)",overflow:"hidden",marginBottom:20,border:"1px solid var(--border)",boxShadow:"var(--shadow2)"}}>
               <iframe style={{width:"100%",height:280,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
