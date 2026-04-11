@@ -45,6 +45,8 @@ const INIT_MS:MustSee[]=[
 ];
 
 const EMERG:Record<string,string>={"Algemeen":"112","Politie":"113","Ambulance":"118","Wegenwacht":"+39 803 116","NL Ambassade":"+39 06 3228 6001"};
+const PHRASES:Record<string,string>={"Hallo":"Ciao","Goedemorgen":"Buongiorno","Dank je":"Grazie","Alsjeblieft":"Per favore","Sorry":"Mi scusi","Hoeveel kost dit?":"Quanto costa?","De rekening":"Il conto, per favore","Waar is...?":"Dove si trova...?","Ik ben verdwaald":"Mi sono perso/a","Mag ik water?":"Posso avere dell\'acqua?","Lekker!":"Buonissimo!","Proost!":"Salute!","Ik spreek geen Italiaans":"Non parlo italiano","Links/rechts":"Sinistra/destra","Station":"La stazione"};
+const PACK:Record<string,string[]>={"ven":["Comfortabele wandelschoenen","Vaporetto dagpas kopen","Waterfles vullen","Powerbank opladen"],"gar":["Zwemkleding","Zonnebrand","Camera","Navigarda app checken"],"ver":["Verona Card kopen","Comfy schoenen","Cash voor gelato"],"tos":["Uffizi tickets checken","Auto huren bevestiging","ZTL zones vermijden","Zonnebrand"],"nap":["Cash! Veel plekken geen pin","Rugzak VOOR dragen","Pompei tickets","Waterfles"],"ama":["Goede wandelschoenen!","2L water meenemen","Zonnebrand","SITA bus kaartjes","Zwemkleding"],"apu":["Wandelschoenen","Auto tanken","Jas voor bergen","Water + snacks"]};
 const uid=()=>Math.random().toString(36).slice(2,8);
 
 function useSB<T extends {id:string}>(table:string,init:T[]):[T[],(v:T[]|((_:T[])=>T[]))=>void,()=>Promise<void>]{
@@ -175,6 +177,8 @@ export default function Page(){
                   {id:"viral",label:"TikTok",n:c.viral.length},
                   {id:"move",label:"Vervoer",n:c.transport.length},
                   {id:"tips",label:"Tips",n:c.firstSteps.length},
+                  {id:"pack",label:"Meenemen",n:(PACK[c.id]||[]).length},
+                  {id:"ital",label:"Italiaans",n:Object.keys(PHRASES).length},
                 ] as const).map(s=>(
                   <button key={s.id} onClick={()=>setExpanded(p=>({active:p.active===s.id?undefined:s.id}))} style={{padding:"8px 14px",borderRadius:20,border:expanded.active===s.id?"1.5px solid var(--accent)":"1px solid var(--border)",background:expanded.active===s.id?"var(--accent2)":"var(--bg2)",color:expanded.active===s.id?"var(--accent)":"var(--text)",fontSize:13,fontWeight:expanded.active===s.id?600:400,cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"var(--shadow)",display:"flex",alignItems:"center",gap:6,transition:"all .15s"}}>
                     {s.label}
@@ -265,6 +269,14 @@ export default function Page(){
 
               {expanded.active==="tips"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:"12px 16px",animation:"fadeUp .2s ease"}}>
                 {c.firstSteps.map((s,i)=><div key={i} style={{padding:"6px 0",fontSize:13,display:"flex",gap:8}}><span style={{color:"var(--accent)",fontWeight:700}}>{i+1}</span>{s}</div>)}
+              </div>)}
+
+              {expanded.active==="pack"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:"12px 16px",animation:"fadeUp .2s ease"}}>
+                {(PACK[c.id]||[]).map((p,i)=><div key={i} style={{padding:"6px 0",fontSize:13,display:"flex",gap:8,alignItems:"center"}}><span style={{width:18,height:18,borderRadius:4,border:"1.5px solid var(--border)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:10}}></span>{p}</div>)}
+              </div>)}
+
+              {expanded.active==="ital"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:"12px 16px",animation:"fadeUp .2s ease"}}>
+                {Object.entries(PHRASES).map(([nl,it],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:i<Object.keys(PHRASES).length-1?"1px solid var(--border2)":"none"}}><span style={{fontSize:13,color:"var(--text2)"}}>{nl}</span><span style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{it}</span></div>)}
               </div>)}
             </div>
 
