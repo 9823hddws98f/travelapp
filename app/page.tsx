@@ -84,6 +84,7 @@ export default function Page(){
   const[selPoi,setSelPoi]=useState<string|null>(null);
   const[editing,setEditing]=useState<string|null>(null);
   const[dragIdx,setDragIdx]=useState<{block:number,idx:number}|null>(null);
+  const[dragDay,setDragDay]=useState<number|null>(null);
   const[editDesc,setEditDesc]=useState("");
   const[editImg,setEditImg]=useState("");
   const[notes,setNotes,reloadNotes]=useSB<Note>("travel_notes",[]);
@@ -110,15 +111,16 @@ export default function Page(){
             <span style={{fontSize:10,fontWeight:700,color:"var(--text3)",letterSpacing:2,textTransform:"uppercase"}}>{sbDays.length} Dagen</span>
             <span style={{fontSize:9,color:"var(--text3)"}}>17 apr — {dayDate(sbDays.length)}</span>
           </div>
-          {sbDays.map(d=>{const ct=C.find(x=>x.id===d.city_id);const sel=selDay===d.day_num&&view==="plan";return(
-            <button key={d.id} onClick={()=>{setSelDay(sel?null:d.day_num);setView("plan");setCityId(null)}} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderRadius:10,border:"none",background:sel?"var(--accent2)":"transparent",color:"var(--text)",cursor:"pointer",textAlign:"left",fontFamily:"var(--sans)",marginBottom:1,transition:"all .15s"}}>
-              <span style={{width:24,height:24,borderRadius:8,background:sel?"var(--accent)":"var(--bg3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:600,color:sel?"#fff":"var(--text2)",flexShrink:0}}>{d.day_num}</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,fontWeight:sel?600:400,color:sel?"var(--text)":"var(--text2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.title}</div>
+          {sbDays.map((d,idx)=>{const ct=C.find(x=>x.id===d.city_id);const sel=selDay===d.day_num&&view==="plan";return(
+            <div key={d.id} draggable onDragStart={()=>setDragDay(idx)} onDragOver={e=>{e.preventDefault();(e.currentTarget as HTMLElement).style.borderTop="2px solid var(--accent)"}} onDragLeave={e=>{(e.currentTarget as HTMLElement).style.borderTop="none"}} onDrop={async e=>{e.preventDefault();(e.currentTarget as HTMLElement).style.borderTop="none";if(dragDay===null||dragDay===idx)return;const days=[...sbDays];const[moved]=days.splice(dragDay,1);days.splice(idx,0,moved);for(let i=0;i<days.length;i++){await supabase.from("travel_days").update({day_num:i+1}).eq("id",days[i].id)}setDragDay(null);await loadDays()}} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:10,background:sel?"var(--accent2)":"transparent",marginBottom:1,cursor:"grab",transition:"all .15s"}}>
+              <span style={{color:"var(--text3)",fontSize:10,cursor:"grab",flexShrink:0,lineHeight:1,letterSpacing:1,userSelect:"none"}}>::</span>
+              <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent((ct?.name||"Italy")+", Italy")}&zoom=12&size=40x40&scale=2&maptype=roadmap&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{width:28,height:28,borderRadius:6,objectFit:"cover",flexShrink:0}} alt=""/>
+              <div onClick={()=>{setSelDay(sel?null:d.day_num);setView("plan");setCityId(null)}} style={{flex:1,minWidth:0,cursor:"pointer"}}>
+                <div style={{fontSize:11,fontWeight:sel?600:400,color:sel?"var(--text)":"var(--text2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.title}</div>
                 <div style={{fontSize:9,color:"var(--text3)"}}>{dayDate(d.day_num)}</div>
               </div>
-              <span style={{fontSize:9,color:"var(--text3)"}}>{ct?.name.slice(0,3)||"?"}</span>
-            </button>
+              <button onClick={async e=>{e.stopPropagation();if(!confirm("Dag "+d.day_num+" verwijderen?"))return;await supabase.from("travel_days").delete().eq("id",d.id);const rest=sbDays.filter(x=>x.id!==d.id);for(let i=0;i<rest.length;i++){await supabase.from("travel_days").update({day_num:i+1}).eq("id",rest[i].id)}await loadDays();if(selDay===d.day_num)setSelDay(null)}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer",padding:"2px 4px",flexShrink:0,opacity:0.4}}>x</button>
+            </div>
           )})}
           <button onClick={async()=>{const num=sbDays.length+1;await supabase.from("travel_days").insert({day_num:num,title:"Nieuwe dag",city_id:C[0].id,hotel:"",morning:[],afternoon:[],evening:""});await loadDays()}} style={{width:"100%",padding:"7px 10px",borderRadius:10,border:"1px dashed var(--border)",background:"transparent",color:"var(--text3)",fontSize:11,cursor:"pointer",marginTop:4}}>+ Dag toevoegen</button>
         </div>
