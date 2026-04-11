@@ -256,48 +256,115 @@ export default function Page(){
             <div style={{fontSize:10,color:"var(--cream3)",letterSpacing:1,marginBottom:8}}>Als eerste doen</div>
             {city.firstSteps.map((s,i)=><div key={i} style={{fontSize:13,color:"var(--cream)",padding:"4px 0",display:"flex",gap:8}}><span style={{color:"var(--terra-l)",fontWeight:700,flexShrink:0}}>{i+1}.</span>{s}</div>)}
           </div>
-          <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
-            {(["do","eat","viral","history","info","notes"] as const).map(t=>(
-              <button key={t} onClick={()=>setCtab(t as any)} style={{flex:"0 1 auto",padding:"8px 10px",borderRadius:8,border:ctab===t?"2px solid var(--terra)":"1px solid rgba(255,255,255,0.06)",background:ctab===t?"rgba(196,112,75,0.12)":"var(--bg2)",color:ctab===t?"var(--terra-l)":"var(--cream2)",fontSize:11,cursor:"pointer",fontFamily:"var(--sans)",whiteSpace:"nowrap"}}>{t==="do"?"Bezienswaardigheden":t==="eat"?"Eten & Drinken":t==="viral"?"TikTok":t==="history"?"Geschiedenis":t==="info"?"Praktisch":"Notities"}</button>
-            ))}
+          
+          {/* Alle content onder de kaart */}
+          
+          {/* Cultuur & Bezienswaardigheden */}
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase"}}>Bezienswaardigheden</div>
+            </div>
+            {city.spots.map((p,i)=>(<div key={"s"+i} onClick={()=>setMapQ(p.name+", "+city.name+", Italy")} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:mapQ?.includes(p.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:10,marginBottom:6,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}>
+              <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)"}}>{p.name}</div><div style={{fontSize:12,color:"var(--cream2)",marginTop:2}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--terra-l)",marginTop:4}}>{p.tip}</div>}</div>
+              <span style={{fontSize:11,color:"var(--cream3)",flexShrink:0,marginLeft:10}}>Kaart</span>
+            </div>))}
+            {cpois.filter(p=>p.city_id===city.id&&p.cat==="cultuur").map(c2=>(<div key={c2.id} style={{display:"flex",alignItems:"center",padding:"10px 16px",background:"var(--bg2)",borderRadius:10,marginBottom:6,border:"1px solid rgba(255,255,255,0.04)"}}>
+              <span onClick={()=>setMapQ(c2.name+", "+city.name+", Italy")} style={{flex:1,fontSize:14,color:"var(--cream)",cursor:"pointer"}}>{c2.name}</span>
+              <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",c2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:12,cursor:"pointer",padding:"4px 8px"}}>x</button>
+            </div>))}
+            {addPoi==="cultuur"?(<div style={{display:"flex",gap:6,marginTop:4}}>
+              <input placeholder="Naam toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"cultuur",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",color:"var(--cream)",fontSize:13,outline:"none",flex:1,fontFamily:"var(--sans)"}}/>
+              <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"cultuur",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>+</button>
+              <button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 10px",color:"var(--cream3)",fontSize:12,cursor:"pointer"}}>x</button>
+            </div>):(<button onClick={()=>setAddPoi("cultuur")} style={{width:"100%",padding:"8px",borderRadius:8,border:"1px dashed rgba(255,255,255,0.1)",background:"transparent",color:"var(--cream3)",fontSize:11,cursor:"pointer",marginTop:4}}>+ Eigen plek toevoegen</button>)}
           </div>
-          {ctab==="do"&&city.spots.map((p,i)=>(<div key={i} onClick={()=>setMapQ(p.name+", "+city.name+", Italy")} style={{background:mapQ?.includes(p.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:12,padding:"12px 14px",marginBottom:8,border:mapQ?.includes(p.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)",marginBottom:3}}>{p.name}</div><div style={{fontSize:12,color:"var(--cream2)",lineHeight:1.5}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--terra-l)",marginTop:6}}>{p.tip}</div>}</div>))}
-          {ctab==="eat"&&city.restaurants.map((r,i)=>(<div key={i} onClick={()=>setMapQ(r.name+", "+city.name+", Italy")} style={{background:mapQ?.includes(r.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:12,padding:"12px 14px",marginBottom:8,border:mapQ?.includes(r.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)",marginBottom:3}}>{r.name} <span style={{color:"var(--terra-l)",fontSize:12}}>{r.price}</span></div><div style={{fontSize:12,color:"var(--cream2)"}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--terra-l)",marginTop:6}}>{r.tip}</div>}</div>))}
-          {ctab==="viral"&&city.viral.map((v,i)=>(<div key={i} style={{background:"var(--bg2)",borderRadius:12,padding:"12px 14px",marginBottom:8,border:"1px solid rgba(255,255,255,0.04)"}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)",marginBottom:3}}>{v.name}</div><div style={{fontSize:12,color:"var(--cream2)",lineHeight:1.5}}>{v.desc}</div><div style={{fontSize:10,color:"var(--terra-l)",marginTop:6}}>{v.tag}</div></div>))}
-          {ctab==="move"&&city.transport.map((t,i)=>(<div key={i} style={{fontSize:13,color:"var(--cream2)",padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)",lineHeight:1.5}}>{t}</div>))}
 
-          {/* History */}
-          {ctab==="history"&&(<div style={{animation:"slideIn .3s ease"}}>
-            <div style={{background:"var(--bg2)",borderRadius:14,padding:"18px 20px",border:"1px solid rgba(255,255,255,0.04)"}}>
-              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Geschiedenis</div>
+          {/* Eten & Drinken */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Eten & Drinken</div>
+            {city.restaurants.map((r,i)=>(<div key={"r"+i} onClick={()=>setMapQ(r.name+", "+city.name+", Italy")} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:mapQ?.includes(r.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:10,marginBottom:6,border:mapQ?.includes(r.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}>
+              <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)"}}>{r.name} <span style={{color:"var(--terra-l)",fontWeight:400,fontSize:12}}>{r.price}</span></div><div style={{fontSize:12,color:"var(--cream2)",marginTop:2}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--terra-l)",marginTop:4}}>{r.tip}</div>}</div>
+              <span style={{fontSize:11,color:"var(--cream3)",flexShrink:0,marginLeft:10}}>Kaart</span>
+            </div>))}
+            {cpois.filter(p=>p.city_id===city.id&&p.cat==="eten").map(c2=>(<div key={c2.id} style={{display:"flex",alignItems:"center",padding:"10px 16px",background:"var(--bg2)",borderRadius:10,marginBottom:6,border:"1px solid rgba(255,255,255,0.04)"}}>
+              <span onClick={()=>setMapQ(c2.name+", "+city.name+", Italy")} style={{flex:1,fontSize:14,color:"var(--cream)",cursor:"pointer"}}>{c2.name}</span>
+              <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",c2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:12,cursor:"pointer",padding:"4px 8px"}}>x</button>
+            </div>))}
+            {addPoi==="eten"?(<div style={{display:"flex",gap:6,marginTop:4}}>
+              <input placeholder="Restaurant toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"eten",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",color:"var(--cream)",fontSize:13,outline:"none",flex:1,fontFamily:"var(--sans)"}}/>
+              <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"eten",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>+</button>
+              <button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 10px",color:"var(--cream3)",fontSize:12,cursor:"pointer"}}>x</button>
+            </div>):(<button onClick={()=>setAddPoi("eten")} style={{width:"100%",padding:"8px",borderRadius:8,border:"1px dashed rgba(255,255,255,0.1)",background:"transparent",color:"var(--cream3)",fontSize:11,cursor:"pointer",marginTop:4}}>+ Eigen restaurant toevoegen</button>)}
+          </div>
+
+          {/* TikTok Viral */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>TikTok Viral</div>
+            {city.viral.map((v,i)=>(<div key={"v"+i} onClick={()=>setMapQ(v.name+", "+city.name+", Italy")} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:mapQ?.includes(v.name)?"rgba(196,112,75,0.1)":"var(--bg2)",borderRadius:10,marginBottom:6,border:mapQ?.includes(v.name)?"1px solid var(--terra)":"1px solid rgba(255,255,255,0.04)",cursor:"pointer",transition:"all .15s"}}>
+              <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:"var(--cream)"}}>{v.name}</div><div style={{fontSize:12,color:"var(--cream2)",marginTop:2}}>{v.desc}</div><div style={{fontSize:10,color:"var(--terra-l)",marginTop:4}}>{v.tag}</div></div>
+              <span style={{fontSize:11,color:"var(--cream3)",flexShrink:0,marginLeft:10}}>Kaart</span>
+            </div>))}
+            {cpois.filter(p=>p.city_id===city.id&&p.cat==="tiktok").map(c2=>(<div key={c2.id} style={{display:"flex",alignItems:"center",padding:"10px 16px",background:"var(--bg2)",borderRadius:10,marginBottom:6,border:"1px solid rgba(255,255,255,0.04)"}}>
+              <span onClick={()=>setMapQ(c2.name+", "+city.name+", Italy")} style={{flex:1,fontSize:14,color:"var(--cream)",cursor:"pointer"}}>{c2.name}</span>
+              <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",c2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:12,cursor:"pointer",padding:"4px 8px"}}>x</button>
+            </div>))}
+            {addPoi==="tiktok"?(<div style={{display:"flex",gap:6,marginTop:4}}>
+              <input placeholder="TikTok spot toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"tiktok",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",color:"var(--cream)",fontSize:13,outline:"none",flex:1,fontFamily:"var(--sans)"}}/>
+              <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"tiktok",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>+</button>
+              <button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 10px",color:"var(--cream3)",fontSize:12,cursor:"pointer"}}>x</button>
+            </div>):(<button onClick={()=>setAddPoi("tiktok")} style={{width:"100%",padding:"8px",borderRadius:8,border:"1px dashed rgba(255,255,255,0.1)",background:"transparent",color:"var(--cream3)",fontSize:11,cursor:"pointer",marginTop:4}}>+ TikTok spot toevoegen</button>)}
+          </div>
+
+          {/* Overige eigen plekken */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Overig</div>
+            {cpois.filter(p=>p.city_id===city.id&&p.cat==="overig").map(c2=>(<div key={c2.id} style={{display:"flex",alignItems:"center",padding:"10px 16px",background:"var(--bg2)",borderRadius:10,marginBottom:6,border:"1px solid rgba(255,255,255,0.04)"}}>
+              <span onClick={()=>setMapQ(c2.name+", "+city.name+", Italy")} style={{flex:1,fontSize:14,color:"var(--cream)",cursor:"pointer"}}>{c2.name}</span>
+              <button onClick={()=>{(async()=>{await supabase.from("travel_custom_pois").delete().eq("id",c2.id);await reloadPoi()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:12,cursor:"pointer",padding:"4px 8px"}}>x</button>
+            </div>))}
+            {addPoi==="overig"?(<div style={{display:"flex",gap:6,marginTop:4}}>
+              <input placeholder="Plek toevoegen..." value={poiName} onChange={e=>setPoiName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&poiName){(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"overig",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}}} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",color:"var(--cream)",fontSize:13,outline:"none",flex:1,fontFamily:"var(--sans)"}}/>
+              <button onClick={()=>{if(!poiName)return;(async()=>{await supabase.from("travel_custom_pois").insert({name:poiName,cat:"overig",city_id:city.id});await reloadPoi()})();setPoiName("");setAddPoi(null)}} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>+</button>
+              <button onClick={()=>setAddPoi(null)} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 10px",color:"var(--cream3)",fontSize:12,cursor:"pointer"}}>x</button>
+            </div>):(<button onClick={()=>setAddPoi("overig")} style={{width:"100%",padding:"8px",borderRadius:8,border:"1px dashed rgba(255,255,255,0.1)",background:"transparent",color:"var(--cream3)",fontSize:11,cursor:"pointer",marginTop:4}}>+ Eigen plek toevoegen</button>)}
+          </div>
+
+          {/* Vervoer */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Vervoer</div>
+            {city.transport.map((t,i)=>(<div key={i} style={{padding:"10px 16px",background:"var(--bg2)",borderRadius:10,marginBottom:6,border:"1px solid rgba(255,255,255,0.04)",fontSize:13,color:"var(--cream2)",lineHeight:1.5}}>{t}</div>))}
+          </div>
+
+          {/* Geschiedenis */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Geschiedenis</div>
+            <div style={{padding:"16px 18px",background:"var(--bg2)",borderRadius:14,border:"1px solid rgba(255,255,255,0.04)"}}>
               <p style={{fontSize:14,lineHeight:1.8,color:"var(--cream2)"}}>{city.history}</p>
             </div>
-          </div>)}
+          </div>
 
-          {/* Praktisch */}
-          {ctab==="info"&&(<div style={{animation:"slideIn .3s ease"}}>
-            <div style={{background:"var(--bg2)",borderRadius:14,padding:"18px 20px",marginBottom:10,border:"1px solid rgba(255,255,255,0.04)"}}>
-              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Budget Indicatie</div>
+          {/* Budget & Veiligheid */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Budget</div>
+            <div style={{padding:"16px 18px",background:"var(--bg2)",borderRadius:14,marginBottom:12,border:"1px solid rgba(255,255,255,0.04)"}}>
               <p style={{fontSize:13,lineHeight:1.7,color:"var(--cream2)"}}>{city.budget}</p>
             </div>
-            <div style={{background:"var(--bg2)",borderRadius:14,padding:"18px 20px",marginBottom:10,border:"1px solid rgba(255,255,255,0.04)"}}>
-              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Veiligheid & Tips</div>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Veiligheid & Tips</div>
+            <div style={{padding:"16px 18px",background:"var(--bg2)",borderRadius:14,marginBottom:12,border:"1px solid rgba(255,255,255,0.04)"}}>
               <p style={{fontSize:13,lineHeight:1.7,color:"var(--cream2)"}}>{city.safety}</p>
             </div>
-            {city.bookings&&(<div style={{background:"var(--bg2)",borderRadius:14,padding:"18px 20px",marginBottom:10,border:"1px solid rgba(255,255,255,0.04)"}}>
-              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Boekingslinks</div>
-              {city.bookings.map((b,i)=>{const[label,url]=b.includes(": ")?b.split(": "):["Link",b];return(<div key={i} style={{marginBottom:6}}><a href={"https://"+url} target="_blank" rel="noreferrer" style={{color:"var(--terra-l)",textDecoration:"none",fontSize:13}}>{label}</a></div>)})}
-            </div>)}
-            <div style={{background:"var(--bg2)",borderRadius:14,padding:"18px 20px",border:"1px solid rgba(255,255,255,0.04)"}}>
-              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Vervoer</div>
-              {city.transport.map((t,i)=>(<div key={i} style={{fontSize:13,color:"var(--cream2)",padding:"6px 0",lineHeight:1.5}}>{t}</div>))}
-            </div>
-          </div>)}
+            {city.bookings&&(<>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Boekingslinks</div>
+              <div style={{padding:"16px 18px",background:"var(--bg2)",borderRadius:14,border:"1px solid rgba(255,255,255,0.04)"}}>
+                {city.bookings.map((b,i)=>{const[label,url]=b.includes(": ")?b.split(": "):["Link",b];return(<div key={i} style={{marginBottom:6}}><a href={"https://"+url} target="_blank" rel="noreferrer" style={{color:"var(--terra-l)",textDecoration:"none",fontSize:13}}>{label}</a></div>)})}
+              </div>
+            </>)}
+          </div>
 
           {/* Notities */}
-          {ctab==="notes"&&(<div style={{animation:"slideIn .3s ease"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <span style={{fontSize:11,fontWeight:700,color:"var(--cream3)",letterSpacing:1,textTransform:"uppercase"}}>Notities voor {city.name}</span>
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--terra-l)",letterSpacing:2,textTransform:"uppercase"}}>Notities</div>
               <button onClick={()=>setAddNote(true)} style={{background:"var(--terra)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:11,cursor:"pointer",fontWeight:600}}>+ Notitie</button>
             </div>
             {addNote&&(<div style={{background:"var(--bg2)",borderRadius:14,padding:14,marginBottom:12,border:"1px solid rgba(255,255,255,0.08)",display:"flex",flexDirection:"column",gap:8}}>
@@ -313,8 +380,8 @@ export default function Page(){
               {n.content&&<div style={{fontSize:13,color:"var(--cream2)",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{n.content}</div>}
               <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",n.id);await reloadNotes()})()}} style={{position:"absolute",top:10,right:10,background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:12,cursor:"pointer"}}>x</button>
             </div>))}
-            {notes.filter(n=>n.city_id===city.id).length===0&&!addNote&&<p style={{fontSize:13,color:"var(--cream3)",textAlign:"center",padding:24,fontStyle:"italic"}}>Nog geen notities voor {city.name}.</p>}
-          </div>)}
+            {notes.filter(n=>n.city_id===city.id).length===0&&!addNote&&<p style={{fontSize:13,color:"var(--cream3)",textAlign:"center",padding:16,fontStyle:"italic"}}>Nog geen notities.</p>}
+          </div>
         </div>)}
 
         {view==="ms"&&(<div style={{animation:"fadeUp .3s ease"}}>
