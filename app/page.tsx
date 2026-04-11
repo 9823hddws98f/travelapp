@@ -200,11 +200,11 @@ export default function Page(){
               </div>)}
 
               {expanded.active==="spots"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
-                {c.spots.filter(p=>!cpois.some(x=>x.cat==="hidden"&&x.name===p.name&&x.city_id===c.id)).map((p,i)=>{const pk="s-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg)",borderRadius:"var(--r)",border:"1px solid var(--border)",marginBottom:6,boxShadow:"var(--shadow)",overflow:"hidden"}}>
-                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(p.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",cursor:"pointer"}}>
+                {c.spots.filter(p=>!cpois.some(x=>x.cat==="hidden"&&x.name===p.name&&x.city_id===c.id)).map((p,i)=>{const pk="s-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",overflow:"hidden"}}>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(p.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}}>
                     <span style={{width:24,height:24,borderRadius:12,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
                     <div style={{flex:1,minWidth:0}}><div style={{fontSize:14,fontWeight:600}}>{p.name}</div><div style={{fontSize:12,color:"var(--text2)"}}>{p.desc}</div></div>
-                    <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:p.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:16,cursor:"pointer",padding:"4px 6px",flexShrink:0}} title="Archiveren">x</button>
+                    <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:p.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"var(--bg3)",border:"none",color:"var(--text2)",fontSize:11,cursor:"pointer",padding:"4px 10px",borderRadius:6,flexShrink:0,fontWeight:500,fontFamily:"var(--sans)"}}>Verwijder</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
                     <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/>
@@ -230,11 +230,11 @@ export default function Page(){
               </div>)}
 
               {expanded.active==="eat"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
-                {c.restaurants.filter(r=>!cpois.some(x=>x.cat==="hidden"&&x.name===r.name&&x.city_id===c.id)).map((r,i)=>{const pk="r-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg)",borderRadius:"var(--r)",border:"1px solid var(--border)",marginBottom:6,boxShadow:"var(--shadow)",overflow:"hidden"}}>
-                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(r.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",cursor:"pointer"}}>
+                {c.restaurants.filter(r=>!cpois.some(x=>x.cat==="hidden"&&x.name===r.name&&x.city_id===c.id)).map((r,i)=>{const pk="r-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",overflow:"hidden"}}>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(r.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}}>
                     <span style={{width:24,height:24,borderRadius:12,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
                     <div style={{flex:1,minWidth:0}}><div style={{fontSize:14,fontWeight:600}}>{r.name} <span style={{fontWeight:400,color:"var(--accent)",fontSize:12}}>{r.price}</span></div><div style={{fontSize:12,color:"var(--text2)"}}>{r.type}</div></div>
-                    <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:r.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:16,cursor:"pointer",padding:"4px 6px",flexShrink:0}} title="Archiveren">x</button>
+                    <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:r.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"var(--bg3)",border:"none",color:"var(--text2)",fontSize:11,cursor:"pointer",padding:"4px 10px",borderRadius:6,flexShrink:0,fontWeight:500,fontFamily:"var(--sans)"}}>Verwijder</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
                     <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/>
@@ -260,11 +260,11 @@ export default function Page(){
               </div>)}
 
               {expanded.active==="viral"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
-                {c.viral.filter(v=>!cpois.some(x=>x.cat==="hidden"&&x.name===v.name&&x.city_id===c.id)).map((v,i)=>{const pk="v-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg)",borderRadius:"var(--r)",border:"1px solid var(--border)",marginBottom:6,boxShadow:"var(--shadow)",overflow:"hidden"}}>
-                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(v.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",cursor:"pointer"}}>
+                {c.viral.filter(v=>!cpois.some(x=>x.cat==="hidden"&&x.name===v.name&&x.city_id===c.id)).map((v,i)=>{const pk="v-"+c.id+"-"+i;const open=selPoi===pk;return(<div key={i} style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",overflow:"hidden"}}>
+                  <div onClick={()=>{setSelPoi(open?null:pk);setMapQ(v.name+", "+c.name+", Italy")}} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}}>
                     <span style={{width:24,height:24,borderRadius:12,background:open?"var(--accent)":"var(--bg3)",color:open?"#fff":"var(--text2)",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
                     <div style={{flex:1,minWidth:0}}><div style={{fontSize:14,fontWeight:600}}>{v.name}</div><div style={{fontSize:12,color:"var(--text2)"}}>{v.desc}</div></div>
-                    <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:v.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:16,cursor:"pointer",padding:"4px 6px",flexShrink:0}} title="Archiveren">x</button>
+                    <button onClick={e=>{e.stopPropagation();(async()=>{await supabase.from("travel_custom_pois").insert({name:v.name,cat:"hidden",city_id:c.id});await reloadPoi()})()}} style={{background:"var(--bg3)",border:"none",color:"var(--text2)",fontSize:11,cursor:"pointer",padding:"4px 10px",borderRadius:6,flexShrink:0,fontWeight:500,fontFamily:"var(--sans)"}}>Verwijder</button>
                   </div>
                   {open&&(<div style={{borderTop:"1px solid var(--border)",animation:"fadeUp .15s ease"}}>
                     <iframe style={{width:"100%",height:160,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(v.name+", "+c.name+", Italy")}`}/>
