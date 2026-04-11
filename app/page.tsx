@@ -83,6 +83,7 @@ export default function Page(){
   const[expanded,setExpanded]=useState<{active?:string}>({});
   const[selPoi,setSelPoi]=useState<string|null>(null);
   const[editing,setEditing]=useState<string|null>(null);
+  const[dragIdx,setDragIdx]=useState<{block:number,idx:number}|null>(null);
   const[editDesc,setEditDesc]=useState("");
   const[editImg,setEditImg]=useState("");
   const[notes,setNotes,reloadNotes]=useSB<Note>("travel_notes",[]);
@@ -225,28 +226,32 @@ export default function Page(){
                       {key:"evening",time:"19:00",label:"Avond",items:[sd.evening].filter(Boolean),color:"#6366f1"},
                     ];
                     const updateArr=async(key:string,arr:string[])=>{await supabase.from("travel_days").update({[key]:key==="evening"?arr.join(", "):arr}).eq("id",sd.id);await loadDays()};
-                    const moveItem=(key:string,items:string[],idx:number,dir:number)=>{const a=[...items];const t=a[idx];a[idx]=a[idx+dir];a[idx+dir]=t;updateArr(key,a)};
                     const deleteItem=(key:string,items:string[],idx:number)=>{const a=items.filter((_,i)=>i!==idx);updateArr(key,a)};
+                    const handleDrop=(bi:number,targetIdx:number)=>{
+                      if(!dragIdx)return;
+                      const srcBlock=blocks[dragIdx.block];const dstBlock=blocks[bi];
+                      if(dragIdx.block===bi){const a=[...srcBlock.items];const[item]=a.splice(dragIdx.idx,1);a.splice(targetIdx,0,item);updateArr(srcBlock.key,a)}
+                      else{const src=[...srcBlock.items];const dst=[...dstBlock.items];const[item]=src.splice(dragIdx.idx,1);dst.splice(targetIdx,0,item);updateArr(srcBlock.key,src);updateArr(dstBlock.key,dst)}
+                      setDragIdx(null);
+                    };
                     return blocks.map((block,bi)=>(
                       <div key={bi} style={{display:"flex",gap:12,marginBottom:14}}>
                         <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:36,flexShrink:0}}>
-                          <div style={{fontSize:10,fontWeight:600,color:"var(--text3)"}}>{block.time}</div>
+                          {editingDay==="time-"+bi?(<input value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onBlur={()=>setEditingDay(null)} style={{width:36,fontSize:10,fontWeight:600,color:"var(--text3)",border:"1px solid var(--border)",borderRadius:4,padding:"1px 2px",textAlign:"center",outline:"none",background:"var(--bg2)"}}/>):(<div onClick={()=>{setEditingDay("time-"+bi);setDayForm({...dayForm,title:block.time})}} style={{fontSize:10,fontWeight:600,color:"var(--text3)",cursor:"pointer"}} title="Klik om tijd aan te passen">{block.time}</div>)}
                           <div style={{width:2,flex:1,background:"var(--border)",marginTop:4,borderRadius:1}}/>
                         </div>
-                        <div style={{flex:1}}>
+                        <div style={{flex:1}} onDragOver={e=>{e.preventDefault();e.currentTarget.style.background="var(--accent3)"}} onDragLeave={e=>{e.currentTarget.style.background="transparent"}} onDrop={e=>{e.preventDefault();e.currentTarget.style.background="transparent";handleDrop(bi,block.items.length)}}>
                           <div style={{fontSize:10,fontWeight:600,color:block.color,letterSpacing:0.5,marginBottom:6,textTransform:"uppercase"}}>{block.label}</div>
                           {block.items.map((a,i)=>(
-                            <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 0",fontSize:13,color:"var(--text)",borderBottom:"1px solid var(--border2)"}}>
-                              <span style={{width:5,height:5,borderRadius:3,background:block.color,flexShrink:0,opacity:0.5}}/>
+                            <div key={i} draggable onDragStart={()=>setDragIdx({block:bi,idx:i})} onDragOver={e=>{e.preventDefault();e.stopPropagation();(e.currentTarget as HTMLElement).style.borderTop="2px solid var(--accent)"}} onDragLeave={e=>{(e.currentTarget as HTMLElement).style.borderTop="none"}} onDrop={e=>{e.preventDefault();e.stopPropagation();(e.currentTarget as HTMLElement).style.borderTop="none";handleDrop(bi,i)}} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 0",fontSize:13,color:"var(--text)",borderBottom:"1px solid var(--border2)",cursor:"grab",userSelect:"none"}}>
+                              <span style={{color:"var(--text3)",fontSize:12,cursor:"grab",flexShrink:0,lineHeight:1,letterSpacing:1}}>::</span>
                               {editingDay==="edit-"+bi+"-"+i?(<div style={{display:"flex",gap:4,flex:1}}>
-                                <input value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"){const a=[...block.items];a[i]=dayForm.title;await updateArr(block.key,a);setEditingDay(null)}}} style={{...inp,fontSize:12,padding:"2px 6px",flex:1}}/>
-                                <button onClick={async()=>{const a=[...block.items];a[i]=dayForm.title;await updateArr(block.key,a);setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:4,padding:"2px 8px",fontSize:10,cursor:"pointer"}}>ok</button>
+                                <input value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"){const a2=[...block.items];a2[i]=dayForm.title;await updateArr(block.key,a2);setEditingDay(null)}}} style={{...inp,fontSize:12,padding:"2px 6px",flex:1}}/>
+                                <button onClick={async()=>{const a2=[...block.items];a2[i]=dayForm.title;await updateArr(block.key,a2);setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:4,padding:"2px 8px",fontSize:10,cursor:"pointer"}}>ok</button>
                               </div>):(<>
                                 <span onClick={()=>{setEditingDay("edit-"+bi+"-"+i);setDayForm({...dayForm,title:a})}} style={{flex:1,cursor:"pointer"}} title="Klik om te bewerken">{a}</span>
                                 <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0}}>Maps</a>
-                                {i>0&&<button onClick={()=>moveItem(block.key,block.items,i,-1)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:10,cursor:"pointer",padding:0}}>↑</button>}
-                                {i<block.items.length-1&&<button onClick={()=>moveItem(block.key,block.items,i,1)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:10,cursor:"pointer",padding:0}}>↓</button>}
-                                <button onClick={()=>deleteItem(block.key,block.items,i)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer",padding:0}}>x</button>
+                                <button onClick={()=>deleteItem(block.key,block.items,i)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer",padding:"0 2px"}}>x</button>
                               </>)}
                             </div>
                           ))}
