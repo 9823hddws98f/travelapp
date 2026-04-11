@@ -208,14 +208,56 @@ export default function Page(){
               </div>
 
               {/* Expanded content below tags */}
-              {expanded.active==="plan"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:"16px 18px",animation:"fadeUp .2s ease"}}>
-                <div style={{fontSize:12,fontWeight:600,color:"var(--text3)",marginBottom:6}}>Hotel</div>
-                <div style={{fontSize:15,fontWeight:500,marginBottom:14}}>{d.hotel}{d.hotelUrl&&<a href={d.hotelUrl} target="_blank" rel="noreferrer" style={{color:"var(--accent)",textDecoration:"none",fontSize:12,marginLeft:6}}>Maps</a>}</div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:12}}>
-                  <div><div style={{fontSize:11,fontWeight:600,color:"var(--accent)",marginBottom:6}}>Ochtend</div>{d.morning.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text2)",padding:"2px 0"}}>{a}</div>)}</div>
-                  <div><div style={{fontSize:11,fontWeight:600,color:"var(--accent)",marginBottom:6}}>Middag</div>{d.afternoon.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text2)",padding:"2px 0"}}>{a}</div>)}</div>
+              {expanded.active==="plan"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",animation:"fadeUp .2s ease",overflow:"hidden"}}>
+                <div style={{display:"flex",flexDirection:typeof window!=="undefined"&&window.innerWidth<600?"column":"row"}}>
+                  {/* Timeline left */}
+                  <div style={{flex:1,padding:"16px 18px",borderRight:typeof window!=="undefined"&&window.innerWidth>=600?"1px solid var(--border)":"none",borderBottom:typeof window!=="undefined"&&window.innerWidth<600?"1px solid var(--border)":"none"}}>
+                    <div style={{fontSize:11,fontWeight:700,color:"var(--text)",letterSpacing:0.5,marginBottom:12,textTransform:"uppercase"}}>Dagplanning</div>
+                    {[
+                      {time:"08:00",label:"Ochtend",items:d.morning,color:"#f59e0b"},
+                      {time:"12:00",label:"Middag",items:d.afternoon,color:"var(--accent)"},
+                      {time:"19:00",label:"Avond",items:[d.evening],color:"#6366f1"},
+                    ].map((block,bi)=>(
+                      <div key={bi} style={{display:"flex",gap:12,marginBottom:16}}>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:40,flexShrink:0}}>
+                          <div style={{fontSize:10,fontWeight:600,color:"var(--text3)"}}>{block.time}</div>
+                          <div style={{width:2,flex:1,background:"var(--border)",marginTop:4,borderRadius:1}}/>
+                        </div>
+                        <div style={{flex:1,paddingBottom:4}}>
+                          <div style={{fontSize:10,fontWeight:600,color:block.color,letterSpacing:0.5,marginBottom:6,textTransform:"uppercase"}}>{block.label}</div>
+                          {block.items.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text)",padding:"3px 0",display:"flex",alignItems:"center",gap:6}}>
+                            <span style={{width:5,height:5,borderRadius:3,background:block.color,flexShrink:0,opacity:0.5}}/>
+                            {a}
+                          </div>)}
+                          {editingDay==="timeline-"+bi&&(<div style={{marginTop:6,display:"flex",gap:4}}>
+                            <input placeholder="Activiteit toevoegen..." value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"&&dayForm.title){const field=bi===0?"morning":bi===1?"afternoon":"evening";if(bi<2){const arr=[...block.items,dayForm.title];await supabase.from("travel_days").update({[field]:arr}).eq("id",sd.id)}else{await supabase.from("travel_days").update({evening:block.items[0]?block.items[0]+", "+dayForm.title:dayForm.title}).eq("id",sd.id)}await loadDays();setDayForm({...dayForm,title:""});setEditingDay(null)}}} style={{...inp,fontSize:12,padding:"4px 8px",flex:1}}/>
+                            <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:10,cursor:"pointer"}}>x</button>
+                          </div>)}
+                          {editingDay!=="timeline-"+bi&&<button onClick={()=>setEditingDay("timeline-"+bi)} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:2}}>+ toevoegen</button>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Hotel right */}
+                  <div style={{width:280,flexShrink:0,padding:"16px 18px"}}>
+                    <div style={{fontSize:11,fontWeight:700,color:"var(--text)",letterSpacing:0.5,marginBottom:12,textTransform:"uppercase"}}>Verblijf</div>
+                    <div style={{borderRadius:10,overflow:"hidden",border:"1px solid var(--border)",marginBottom:12}}>
+                      <iframe style={{width:"100%",height:140,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(d.hotel+", Italy")}`}/>
+                    </div>
+                    <div style={{fontSize:15,fontWeight:600,marginBottom:4}}>{d.hotel}</div>
+                    <a href={d.hotelUrl||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.hotel+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:12,color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+                      Open in Maps
+                    </a>
+                    {editingDay==="hotel"?(<div style={{marginTop:10,display:"flex",flexDirection:"column",gap:6}}>
+                      <input placeholder="Hotel naam" value={dayForm.hotel} onChange={e=>setDayForm({...dayForm,hotel:e.target.value})} style={{...inp,fontSize:12,padding:"6px 8px"}}/>
+                      <input placeholder="Maps URL (optioneel)" value={dayForm.hotel_url} onChange={e=>setDayForm({...dayForm,hotel_url:e.target.value})} style={{...inp,fontSize:11,padding:"6px 8px"}}/>
+                      <div style={{display:"flex",gap:4}}>
+                        <button onClick={async()=>{await supabase.from("travel_days").update({hotel:dayForm.hotel,hotel_url:dayForm.hotel_url||null}).eq("id",sd.id);await loadDays();setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",fontSize:11,cursor:"pointer"}}>Opslaan</button>
+                        <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button>
+                      </div>
+                    </div>):(<button onClick={()=>{setEditingDay("hotel");setDayForm({...dayForm,hotel:sd.hotel,hotel_url:sd.hotel_url||""})}} style={{marginTop:8,fontSize:10,color:"var(--text3)",background:"none",border:"1px dashed var(--border)",borderRadius:6,padding:"4px 10px",cursor:"pointer",width:"100%"}}>Hotel wijzigen</button>)}
+                  </div>
                 </div>
-                <div style={{borderTop:"1px solid var(--border)",paddingTop:8}}><span style={{fontSize:11,color:"var(--text3)"}}>Avond: </span><span style={{fontSize:13}}>{d.evening}</span></div>
               </div>)}
 
               {expanded.active==="spots"&&(<div style={{marginTop:12,background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",padding:8,animation:"fadeUp .2s ease"}}>
