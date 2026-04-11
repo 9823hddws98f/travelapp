@@ -845,12 +845,12 @@ export default function Page(){
             {m.img&&<div style={{width:56,height:56,borderRadius:"var(--r)",backgroundImage:`url(${m.img})`,backgroundSize:"cover",backgroundPosition:"center",flexShrink:0}}/>}
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:14,fontWeight:600,color:"var(--text)",display:"flex",alignItems:"center",gap:8}}>
-                <button onClick={()=>{(async()=>{await supabase.from("travel_mustsee").update({done:!m.done}).eq("id",m.id);await reloadMs()})()}} style={{background:"none",border:"1px solid var(--cream3)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--accent)",flexShrink:0}}>{m.done?"\u2713":""}</button>
+                <button onClick={()=>{(async()=>{await supabase.from("travel_mustsee").update({done:!m.done}).eq("id",m.id);await reloadMs()})()}} style={{background:"none",border:"1.5px solid var(--border)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--accent)",flexShrink:0}}>{m.done?"\u2713":""}</button>
                 {m.link?<a href={m.link} target="_blank" rel="noreferrer" style={{color:"var(--accent)",textDecoration:"none"}}>{m.title}</a>:<span>{m.title}</span>}
               </div>
               {m.description&&<div style={{fontSize:12,color:"var(--text2)",marginTop:4,lineHeight:1.4}}>{m.description}</div>}
             </div>
-            <button onClick={()=>{(async()=>{await supabase.from("travel_mustsee").delete().eq("id",m.id);await reloadMs()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
+            <button onClick={()=>{(async()=>{await supabase.from("travel_mustsee").delete().eq("id",m.id);await reloadMs()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
           </div>))}
         </div>)}
 
@@ -864,9 +864,9 @@ export default function Page(){
             <button onClick={()=>{if(!tdTxt)return;(async()=>{await supabase.from("travel_todos").insert({text:tdTxt,done:false});await reloadTd()})();setTdTxt("");setAddTd(false)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer",flexShrink:0}}>+</button>
           </div>)}
           {todos.map(t=>(<div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--bg2)",borderRadius:"var(--r)",marginBottom:6,border:"1px solid var(--border)",boxShadow:"var(--shadow)",opacity:t.done?.45:1}}>
-            <button onClick={()=>{(async()=>{await supabase.from("travel_todos").update({done:!t.done}).eq("id",t.id);await reloadTd()})()}} style={{background:"none",border:"1px solid var(--cream3)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--accent)",flexShrink:0}}>{t.done?"\u2713":""}</button>
+            <button onClick={()=>{(async()=>{await supabase.from("travel_todos").update({done:!t.done}).eq("id",t.id);await reloadTd()})()}} style={{background:"none",border:"1.5px solid var(--border)",width:18,height:18,borderRadius:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--accent)",flexShrink:0}}>{t.done?"\u2713":""}</button>
             <span style={{fontSize:14,color:"var(--text)",flex:1,textDecoration:t.done?"line-through":"none"}}>{t.text}</span>
-            <button onClick={()=>{(async()=>{await supabase.from("travel_todos").delete().eq("id",t.id);await reloadTd()})()}} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
+            <button onClick={()=>{(async()=>{await supabase.from("travel_todos").delete().eq("id",t.id);await reloadTd()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:14,cursor:"pointer",padding:4}}>x</button>
           </div>))}
           {todos.length===0&&!addTd&&<p style={{fontSize:13,color:"var(--text3)",textAlign:"center",padding:40,fontStyle:"italic"}}>Nog geen items.</p>}
         </div>)}
