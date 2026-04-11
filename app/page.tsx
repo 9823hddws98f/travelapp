@@ -223,9 +223,9 @@ export default function Page(){
                     const blocks=[
                       {key:"morning",time:"08:00",label:"Ochtend",items:sd.morning||[],color:"#f59e0b"},
                       {key:"afternoon",time:"13:00",label:"Middag",items:sd.afternoon||[],color:"var(--accent)"},
-                      {key:"evening",time:"19:00",label:"Avond",items:[sd.evening].filter(Boolean),color:"#6366f1"},
+                      {key:"evening",time:"19:00",label:"Avond",items:sd.evening?sd.evening.split("|||"):[],color:"#6366f1"},
                     ];
-                    const updateArr=async(key:string,arr:string[])=>{await supabase.from("travel_days").update({[key]:key==="evening"?arr.join(", "):arr}).eq("id",sd.id);await loadDays()};
+                    const updateArr=async(key:string,arr:string[])=>{await supabase.from("travel_days").update({[key]:key==="evening"?arr.join("|||"):arr}).eq("id",sd.id);await loadDays()};
                     const deleteItem=(key:string,items:string[],idx:number)=>{const a=items.filter((_,i)=>i!==idx);updateArr(key,a)};
                     const handleDrop=(bi:number,targetIdx:number)=>{
                       if(!dragIdx)return;
@@ -249,10 +249,28 @@ export default function Page(){
                                 <input value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"){const a2=[...block.items];a2[i]=dayForm.title;await updateArr(block.key,a2);setEditingDay(null)}}} style={{...inp,fontSize:12,padding:"2px 6px",flex:1}}/>
                                 <button onClick={async()=>{const a2=[...block.items];a2[i]=dayForm.title;await updateArr(block.key,a2);setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:4,padding:"2px 8px",fontSize:10,cursor:"pointer"}}>ok</button>
                               </div>):(<>
-                                <span onClick={()=>{setEditingDay("edit-"+bi+"-"+i);setDayForm({...dayForm,title:a})}} style={{flex:1,cursor:"pointer"}} title="Klik om te bewerken">{a}</span>
-                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0}}>Maps</a>
+                                <span onClick={()=>setSelPoi(selPoi==="act-"+bi+"-"+i?null:"act-"+bi+"-"+i)} style={{flex:1,cursor:"pointer"}}>{a}</span>
                                 <button onClick={()=>deleteItem(block.key,block.items,i)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer",padding:"0 2px"}}>x</button>
                               </>)}
+                            {selPoi==="act-"+bi+"-"+i&&(<div style={{margin:"4px 0 8px 20px",background:"var(--bg)",borderRadius:10,border:"1px solid var(--border)",padding:"10px 12px",animation:"fadeUp .15s ease",fontSize:12}}>
+                              <div style={{display:"flex",gap:8,marginBottom:8}}>
+                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,padding:"8px",borderRadius:8,background:"var(--accent2)",color:"var(--accent)",textDecoration:"none",fontWeight:600,fontSize:11}}>Open in Maps</a>
+                                <button onClick={()=>{setEditingDay("edit-"+bi+"-"+i);setDayForm({...dayForm,title:a})}} style={{flex:1,padding:"8px",borderRadius:8,background:"var(--bg3)",border:"none",color:"var(--text2)",fontSize:11,cursor:"pointer"}}>Bewerken</button>
+                              </div>
+                              {(()=>{const noteKey="act:"+sd.id+":"+bi+":"+i;const nt=notes.find(n=>n.title===noteKey);return(<>
+                                {nt&&<div style={{background:"var(--bg2)",borderRadius:8,padding:"8px 10px",marginBottom:6,border:"1px solid var(--border)"}}>
+                                  <div style={{fontSize:12,color:"var(--text)",whiteSpace:"pre-wrap"}}>{nt.content}</div>
+                                  <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",nt.id);await reloadNotes()})()}} style={{background:"none",border:"none",color:"var(--text3)",fontSize:10,cursor:"pointer",marginTop:4}}>Verwijder notitie</button>
+                                </div>}
+                                {editingDay==="note-"+bi+"-"+i?(<div style={{display:"flex",flexDirection:"column",gap:4}}>
+                                  <textarea placeholder="Beschrijving, tips, links..." value={noteForm.c} onChange={e=>setNoteForm({...noteForm,c:e.target.value})} style={{...inp,fontSize:12,minHeight:50,resize:"vertical",padding:"6px 8px"}}/>
+                                  <div style={{display:"flex",gap:4}}>
+                                    <button onClick={()=>{if(!noteForm.c)return;(async()=>{if(nt){await supabase.from("travel_notes").update({content:noteForm.c}).eq("id",nt.id)}else{await supabase.from("travel_notes").insert({city_id:c.id,title:noteKey,content:noteForm.c})}await reloadNotes()})();setEditingDay(null);setNoteForm({t:"",c:""})}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:6,padding:"4px 12px",fontSize:11,cursor:"pointer"}}>Opslaan</button>
+                                    <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>x</button>
+                                  </div>
+                                </div>):(!nt&&<button onClick={()=>{setEditingDay("note-"+bi+"-"+i);setNoteForm({t:"",c:""})}} style={{width:"100%",padding:6,borderRadius:6,border:"1px dashed var(--border)",background:"transparent",color:"var(--text3)",fontSize:11,cursor:"pointer"}}>+ Beschrijving toevoegen</button>)}
+                              </>)})()}
+                            </div>)}
                             </div>
                           ))}
                           {editingDay==="add-"+bi?(<div style={{display:"flex",gap:4,marginTop:4}}>
