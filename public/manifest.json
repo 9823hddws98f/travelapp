@@ -4,8 +4,8 @@
   "description": "10 dagen Italie reisplanner",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#110e0c",
-  "theme_color": "#c4704b",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {
