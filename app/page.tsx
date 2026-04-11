@@ -213,30 +213,45 @@ export default function Page(){
                   {/* Timeline left */}
                   <div style={{flex:1,padding:"16px 18px",borderRight:typeof window!=="undefined"&&window.innerWidth>=600?"1px solid var(--border)":"none",borderBottom:typeof window!=="undefined"&&window.innerWidth<600?"1px solid var(--border)":"none"}}>
                     <div style={{fontSize:11,fontWeight:700,color:"var(--text)",letterSpacing:0.5,marginBottom:12,textTransform:"uppercase"}}>Dagplanning</div>
-                    {[
-                      {time:"08:00",label:"Ochtend",items:d.morning,color:"#f59e0b"},
-                      {time:"12:00",label:"Middag",items:d.afternoon,color:"var(--accent)"},
-                      {time:"19:00",label:"Avond",items:[d.evening],color:"#6366f1"},
-                    ].map((block,bi)=>(
-                      <div key={bi} style={{display:"flex",gap:12,marginBottom:16}}>
-                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:40,flexShrink:0}}>
+                    {(()=>{
+                    const blocks=[
+                      {key:"morning",time:"08:00",label:"Ochtend",items:sd.morning||[],color:"#f59e0b"},
+                      {key:"afternoon",time:"13:00",label:"Middag",items:sd.afternoon||[],color:"var(--accent)"},
+                      {key:"evening",time:"19:00",label:"Avond",items:[sd.evening].filter(Boolean),color:"#6366f1"},
+                    ];
+                    const updateArr=async(key:string,arr:string[])=>{await supabase.from("travel_days").update({[key]:key==="evening"?arr.join(", "):arr}).eq("id",sd.id);await loadDays()};
+                    const moveItem=(key:string,items:string[],idx:number,dir:number)=>{const a=[...items];const t=a[idx];a[idx]=a[idx+dir];a[idx+dir]=t;updateArr(key,a)};
+                    const deleteItem=(key:string,items:string[],idx:number)=>{const a=items.filter((_,i)=>i!==idx);updateArr(key,a)};
+                    return blocks.map((block,bi)=>(
+                      <div key={bi} style={{display:"flex",gap:12,marginBottom:14}}>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:36,flexShrink:0}}>
                           <div style={{fontSize:10,fontWeight:600,color:"var(--text3)"}}>{block.time}</div>
                           <div style={{width:2,flex:1,background:"var(--border)",marginTop:4,borderRadius:1}}/>
                         </div>
-                        <div style={{flex:1,paddingBottom:4}}>
+                        <div style={{flex:1}}>
                           <div style={{fontSize:10,fontWeight:600,color:block.color,letterSpacing:0.5,marginBottom:6,textTransform:"uppercase"}}>{block.label}</div>
-                          {block.items.map((a,i)=><div key={i} style={{fontSize:13,color:"var(--text)",padding:"3px 0",display:"flex",alignItems:"center",gap:6}}>
-                            <span style={{width:5,height:5,borderRadius:3,background:block.color,flexShrink:0,opacity:0.5}}/>
-                            {a}
-                          </div>)}
-                          {editingDay==="timeline-"+bi&&(<div style={{marginTop:6,display:"flex",gap:4}}>
-                            <input placeholder="Activiteit toevoegen..." value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"&&dayForm.title){const field=bi===0?"morning":bi===1?"afternoon":"evening";if(bi<2){const arr=[...block.items,dayForm.title];await supabase.from("travel_days").update({[field]:arr}).eq("id",sd.id)}else{await supabase.from("travel_days").update({evening:block.items[0]?block.items[0]+", "+dayForm.title:dayForm.title}).eq("id",sd.id)}await loadDays();setDayForm({...dayForm,title:""});setEditingDay(null)}}} style={{...inp,fontSize:12,padding:"4px 8px",flex:1}}/>
-                            <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"4px 8px",color:"var(--text3)",fontSize:10,cursor:"pointer"}}>x</button>
-                          </div>)}
-                          {editingDay!=="timeline-"+bi&&<button onClick={()=>setEditingDay("timeline-"+bi)} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:2}}>+ toevoegen</button>}
+                          {block.items.map((a,i)=>(
+                            <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 0",fontSize:13,color:"var(--text)",borderBottom:"1px solid var(--border2)"}}>
+                              <span style={{width:5,height:5,borderRadius:3,background:block.color,flexShrink:0,opacity:0.5}}/>
+                              {editingDay==="edit-"+bi+"-"+i?(<div style={{display:"flex",gap:4,flex:1}}>
+                                <input value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"){const a=[...block.items];a[i]=dayForm.title;await updateArr(block.key,a);setEditingDay(null)}}} style={{...inp,fontSize:12,padding:"2px 6px",flex:1}}/>
+                                <button onClick={async()=>{const a=[...block.items];a[i]=dayForm.title;await updateArr(block.key,a);setEditingDay(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:4,padding:"2px 8px",fontSize:10,cursor:"pointer"}}>ok</button>
+                              </div>):(<>
+                                <span onClick={()=>{setEditingDay("edit-"+bi+"-"+i);setDayForm({...dayForm,title:a})}} style={{flex:1,cursor:"pointer"}} title="Klik om te bewerken">{a}</span>
+                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0}}>Maps</a>
+                                {i>0&&<button onClick={()=>moveItem(block.key,block.items,i,-1)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:10,cursor:"pointer",padding:0}}>↑</button>}
+                                {i<block.items.length-1&&<button onClick={()=>moveItem(block.key,block.items,i,1)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:10,cursor:"pointer",padding:0}}>↓</button>}
+                                <button onClick={()=>deleteItem(block.key,block.items,i)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:12,cursor:"pointer",padding:0}}>x</button>
+                              </>)}
+                            </div>
+                          ))}
+                          {editingDay==="add-"+bi?(<div style={{display:"flex",gap:4,marginTop:4}}>
+                            <input placeholder="Activiteit..." value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"&&dayForm.title){const arr=[...block.items,dayForm.title];await updateArr(block.key,arr);setDayForm({...dayForm,title:""});setEditingDay(null)}}} style={{...inp,fontSize:12,padding:"4px 8px",flex:1}}/>
+                            <button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"2px 6px",color:"var(--text3)",fontSize:10,cursor:"pointer"}}>x</button>
+                          </div>):(<button onClick={()=>{setEditingDay("add-"+bi);setDayForm({...dayForm,title:""})}} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:2}}>+ toevoegen</button>)}
                         </div>
                       </div>
-                    ))}
+                    ))})()}
                   </div>
                   {/* Hotel right */}
                   <div style={{width:280,flexShrink:0,padding:"16px 18px"}}>
