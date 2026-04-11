@@ -68,7 +68,7 @@ export default function Page(){
   useEffect(()=>{loadDays()},[loadDays]);
   const[selDay,setSelDay]=useState<number|null>(null);
   const[cityId,setCityId]=useState<string|null>(null);
-  const[view,setView]=useState<"plan"|"city"|"ms"|"td">("plan");
+  const[view,setView]=useState<"plan"|"city"|"ms"|"td"|"hotels">("plan");
   const[ms,setMs,reloadMs]=useSB<MustSee>("travel_mustsee",INIT_MS);
   const[todos,setTodos,reloadTd]=useSB<Todo>("travel_todos",[]);
   const[showAdd,setShowAdd]=useState(false);
@@ -223,6 +223,8 @@ export default function Page(){
                 </div>))}
               </div>
             </div>):null})()}
+
+            {d.title.includes(" - ")?<div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",padding:"14px 18px",marginBottom:16,boxShadow:"var(--shadow)"}}><div style={{fontSize:10,fontWeight:700,color:"var(--text3)",letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Reisschema</div><div style={{display:"flex",alignItems:"center"}}>{d.title.split(" - ").map((stop:string,si:number,arr:string[])=><div key={si} style={{display:"flex",alignItems:"center",flex:si<arr.length-1?1:"0 0 auto"}}><div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}><div style={{width:si===0||si===arr.length-1?12:8,height:si===0||si===arr.length-1?12:8,borderRadius:"50%",background:si===0?"var(--accent)":si===arr.length-1?"#22c55e":"var(--bg4)",border:"2px solid "+(si===0?"var(--accent)":si===arr.length-1?"#22c55e":"var(--text3)")}}/><div style={{fontSize:10,color:si===0||si===arr.length-1?"var(--text)":"var(--text3)",marginTop:4,whiteSpace:"nowrap",fontWeight:si===0||si===arr.length-1?600:400}}>{stop.trim()}</div></div>{si<arr.length-1?<div style={{flex:1,height:2,background:"var(--bg4)",margin:"0 6px",marginBottom:18,borderRadius:1}}/>:null}</div>)}</div></div>:null}
 
             {/* Map */}
             <div style={{borderRadius:"var(--r2)",overflow:"hidden",marginBottom:20,border:"1px solid var(--border)",boxShadow:"var(--shadow2)"}}>
@@ -742,6 +744,19 @@ export default function Page(){
             {notes.filter(n=>n.city_id===city.id).length===0&&!addNote&&<p style={{fontSize:13,color:"var(--text3)",textAlign:"center",padding:16,fontStyle:"italic"}}>Nog geen notities.</p>}
           </div>
         </div>)}
+
+        {view==="hotels"&&<div style={{animation:"fadeUp .3s ease"}}>
+          <h2 style={{fontSize:22,fontWeight:700,marginBottom:20}}>Overnachtingen</h2>
+          {sbDays.filter(dd=>dd.hotel).map(dy=><div key={dy.id} style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",boxShadow:"var(--shadow)",marginBottom:12,overflow:"hidden",display:"flex"}}>
+            <iframe style={{width:180,height:120,border:"none",display:"block",flexShrink:0}} loading="lazy" src={"https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q="+encodeURIComponent(dy.hotel+", Italy")}/>
+            <div style={{flex:1,padding:"12px 16px",minWidth:0}}>
+              <div style={{fontSize:10,color:"var(--text3)"}}>{"Nacht "+dy.day_num+" — "+dayDate(dy.day_num)}</div>
+              <div style={{fontSize:15,fontWeight:600,marginBottom:2}}>{dy.hotel}</div>
+              <div style={{fontSize:12,color:"var(--text2)",marginBottom:6}}>{C.find(x=>x.id===dy.city_id)?.name||""}</div>
+              <a href={dy.hotel_url||"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(dy.hotel+", Italy")} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",fontWeight:600}}>Open in Maps</a>
+            </div>
+          </div>)}
+        </div>}
 
         {view==="ms"&&(<div style={{animation:"fadeUp .3s ease"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
