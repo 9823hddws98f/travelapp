@@ -379,24 +379,29 @@ export default function Page(){
             </div>
 
             {/* Selected POI detail */}
-            {selPoi&&selPoi.startsWith("s-")&&(()=>{const idx=parseInt(selPoi.split("-")[2]);const spots2=c.spots.filter(p=>!cpois.some(x=>x.cat==="hidden"&&x.name===p.name&&x.city_id===c.id));const p=spots2[idx];if(!p)return null;return <div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--accent)",padding:0,marginBottom:16,boxShadow:"var(--shadow2)",overflow:"hidden"}}>
-              <div style={{display:"flex",height:180}}><iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/><img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(p.name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={p.name}/></div>
-              <div style={{padding:"12px 14px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:15,fontWeight:600}}>{p.name}</div><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"3px 10px",borderRadius:6}}>Open in Maps</a></div><div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:4}}>{p.tip}</div>}
-                <div style={{display:"flex",gap:6,marginTop:8}}>
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"6px",borderRadius:6,fontWeight:600}}>Navigeer</a>
-                  <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:11,color:"var(--text3)",background:"var(--bg3)",border:"none",borderRadius:6,padding:"6px",cursor:"pointer"}}>Sluiten</button>
+            {selPoi&&(selPoi.startsWith("s-")||selPoi.startsWith("r-")||selPoi.startsWith("v-"))&&(()=>{
+              const type=selPoi[0];const idx=parseInt(selPoi.split("-")[2]);
+              let name="",desc="",tip="",price="";
+              if(type==="s"){const spots2=c.spots.filter(p=>!cpois.some(x=>x.cat==="hidden"&&x.name===p.name&&x.city_id===c.id));const p=spots2[idx];if(!p)return null;name=p.name;desc=p.desc;tip=p.tip||""}
+              if(type==="r"){const rests=c.restaurants.filter(r=>!cpois.some(x=>x.cat==="hidden"&&x.name===r.name&&x.city_id===c.id));const r=rests[idx];if(!r)return null;name=r.name;desc=r.type;tip=r.tip||"";price=r.price}
+              if(type==="v"){const virs=c.viral.filter(v=>!cpois.some(x=>x.cat==="hidden"&&x.name===v.name&&x.city_id===c.id));const v=virs[idx];if(!v)return null;name=v.name;desc=v.desc;tip=v.tag}
+              return <div onClick={()=>setSelPoi(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                <div onClick={e=>e.stopPropagation()} style={{background:"var(--bg2)",borderRadius:16,maxWidth:480,width:"100%",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}}>
+                  <div style={{display:"flex",height:200}}>
+                    <iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(name+", "+c.name+", Italy")}`}/>
+                    <img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={name}/>
+                  </div>
+                  <div style={{padding:"16px 20px"}}>
+                    <div style={{fontSize:18,fontWeight:700,marginBottom:4}}>{name}{price&&<span style={{fontWeight:400,color:"var(--accent)",fontSize:14,marginLeft:6}}>{price}</span>}</div>
+                    <div style={{fontSize:13,color:"var(--text2)",marginBottom:4}}>{desc}</div>
+                    {tip&&<div style={{fontSize:12,color:"var(--accent)",marginBottom:8}}>{tip}</div>}
+                    <div style={{display:"flex",gap:8,marginTop:12}}>
+                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:13,color:"#fff",textDecoration:"none",background:"var(--accent)",padding:"10px",borderRadius:10,fontWeight:600}}>Navigeer</a>
+                      <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:13,color:"var(--text2)",background:"var(--bg3)",border:"none",borderRadius:10,padding:"10px",cursor:"pointer",fontWeight:500}}>Sluiten</button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>})()}
-            {selPoi&&selPoi.startsWith("r-")&&(()=>{const idx=parseInt(selPoi.split("-")[2]);const rests=c.restaurants.filter(r=>!cpois.some(x=>x.cat==="hidden"&&x.name===r.name&&x.city_id===c.id));const r=rests[idx];if(!r)return null;return <div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--accent)",padding:0,marginBottom:16,boxShadow:"var(--shadow2)",overflow:"hidden"}}>
-              <div style={{display:"flex",height:180}}><iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/><img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(r.name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={r.name}/></div>
-              <div style={{padding:"12px 14px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:15,fontWeight:600}}>{r.name} <span style={{fontWeight:400,color:"var(--accent)"}}>{r.price}</span></div><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"3px 10px",borderRadius:6}}>Open in Maps</a></div><div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:4}}>{r.tip}</div>}
-                <div style={{display:"flex",gap:6,marginTop:8}}>
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"6px",borderRadius:6,fontWeight:600}}>Navigeer</a>
-                  <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:11,color:"var(--text3)",background:"var(--bg3)",border:"none",borderRadius:6,padding:"6px",cursor:"pointer"}}>Sluiten</button>
-                </div>
-              </div>
-            </div>})()}
+              </div>})()}
 
 {/* Stadsinfo */}
             <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4,marginBottom:24}}>
