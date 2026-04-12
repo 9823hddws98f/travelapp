@@ -299,9 +299,7 @@ export default function Page(){
               <iframe style={{width:"100%",height:280,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
             </div>
 
-            {/* Collapsible sections */}
-            <div style={{marginBottom:24}}>
-              {/* Content columns */}
+            {/* Content columns */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))",gap:12,marginBottom:24}}>
               {/* Cultuur */}
               <div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--border)",padding:"12px 14px",boxShadow:"var(--shadow)"}}>
