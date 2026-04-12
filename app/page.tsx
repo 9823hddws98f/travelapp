@@ -415,7 +415,26 @@ export default function Page(){
                       </div>
                       <button onClick={()=>{const content=noteForm.t?noteForm.c+"\n[IMG]"+noteForm.t:noteForm.c;(async()=>{if(poiNote){await supabase.from("travel_notes").update({content}).eq("id",poiNote.id)}else if(content){await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+name+":"+c.id,content})}await reloadNotes()})();setEditing(null);setNoteForm({t:"",c:""})}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:10,padding:"10px",fontSize:13,cursor:"pointer",fontWeight:600}}>Opslaan</button>
                     </div>}
-                    {!editing&&<div style={{display:"flex",gap:8,marginTop:12}}>
+                    {!editing&&
+                    {/* Eigen notitie */}
+                    {(()=>{const nk="poi:"+c.id+":"+name;const pNote=notes.find(n=>n.title===nk);return <div style={{marginTop:10}}>
+                      {pNote?<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",marginBottom:8}}>
+                        <div style={{fontSize:13,color:"var(--text)",whiteSpace:"pre-wrap"}}>{pNote.content}</div>
+                        <div style={{display:"flex",gap:6,marginTop:6}}>
+                          <button onClick={()=>{setEditing("modal-note");setEditDesc(pNote.content)}} style={{fontSize:10,color:"var(--accent)",background:"none",border:"none",cursor:"pointer"}}>Bewerken</button>
+                          <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",pNote.id);await reloadNotes()})()}} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer"}}>Verwijder</button>
+                        </div>
+                      </div>:null}
+                      {editing==="modal-note"?<div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        <textarea placeholder="Jouw beschrijving, tips, ervaringen..." value={editDesc} onChange={e=>setEditDesc(e.target.value)} style={{width:"100%",fontSize:13,border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",outline:"none",background:"var(--bg)",color:"var(--text)",fontFamily:"var(--sans)",minHeight:60,resize:"vertical"}}/>
+                        <div style={{display:"flex",gap:6}}>
+                          <button onClick={()=>{if(!editDesc)return;(async()=>{const ex=notes.find(n2=>n2.title===nk);if(ex){await supabase.from("travel_notes").update({content:editDesc}).eq("id",ex.id)}else{await supabase.from("travel_notes").insert({city_id:c.id,title:nk,content:editDesc})}await reloadNotes()})();setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
+                          <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
+                        </div>
+                      </div>:(!pNote&&<button onClick={()=>{setEditing("modal-note");setEditDesc("")}} style={{width:"100%",padding:8,borderRadius:8,border:"1px dashed var(--border)",background:"transparent",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving toevoegen</button>)}
+                    </div>})()}
+
+                    <div style={{display:"flex",gap:8,marginTop:12}}>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:13,color:"#fff",textDecoration:"none",background:"var(--accent)",padding:"10px",borderRadius:10,fontWeight:600}}>Navigeer</a>
                       <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:13,color:"var(--text2)",background:"var(--bg3)",border:"none",borderRadius:10,padding:"10px",cursor:"pointer",fontWeight:500}}>Sluiten</button>
                     </div>}
