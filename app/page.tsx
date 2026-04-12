@@ -299,6 +299,49 @@ export default function Page(){
               <iframe style={{width:"100%",height:280,border:"none",display:"block"}} loading="lazy" src={mapQ?`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapQ)}`:`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${c.lat},${c.lng}&zoom=${c.zoom}&maptype=roadmap`} allowFullScreen />
             </div>
 
+            {/* Planning toggle */}
+            <button onClick={()=>setExpanded(p=>({...p,plan:!p.plan}))} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:"var(--r)",cursor:"pointer",fontFamily:"var(--sans)",boxShadow:"var(--shadow)",marginBottom:expanded.plan?0:16}}>
+              <span style={{fontSize:13,fontWeight:600}}>Dagplanning</span>
+              <span style={{fontSize:11,color:"var(--text3)"}}>{expanded.plan?"▲":"▼"}</span>
+            </button>
+            {expanded.plan&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderTop:"none",borderRadius:"0 0 var(--r) var(--r)",boxShadow:"var(--shadow)",marginBottom:16,overflow:"hidden"}}>
+              <div style={{display:"flex",flexDirection:typeof window!=="undefined"&&window.innerWidth<600?"column":"row"}}>
+                <div style={{flex:1,padding:"14px 16px",borderRight:"1px solid var(--border)"}}>
+                  {(()=>{
+                    const blocks=[
+                      {key:"morning",time:"08:00",label:"Ochtend",items:sd.morning||[],color:"#f59e0b"},
+                      {key:"afternoon",time:"13:00",label:"Middag",items:sd.afternoon||[],color:"var(--accent)"},
+                      {key:"evening",time:"19:00",label:"Avond",items:sd.evening?sd.evening.split("|||"):[],color:"#6366f1"},
+                    ];
+                    const updateArr=async(key:string,arr:string[])=>{await supabase.from("travel_days").update({[key]:key==="evening"?arr.join("|||"):arr}).eq("id",sd.id);await loadDays()};
+                    const deleteItem=(key:string,items:string[],idx:number)=>{const a=items.filter((_,i)=>i!==idx);updateArr(key,a)};
+                    return blocks.map((block,bi)=>(
+                      <div key={bi} style={{display:"flex",gap:10,marginBottom:12}}>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:32,flexShrink:0}}>
+                          <div style={{fontSize:10,fontWeight:600,color:"var(--text3)"}}>{block.time}</div>
+                          <div style={{width:2,flex:1,background:"var(--border)",marginTop:4}}/>
+                        </div>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:10,fontWeight:600,color:block.color,letterSpacing:0.5,marginBottom:4,textTransform:"uppercase"}}>{block.label}</div>
+                          {block.items.map((a,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 0",fontSize:12,borderBottom:"1px solid var(--border2)"}}>
+                            <span style={{width:4,height:4,borderRadius:2,background:block.color,flexShrink:0,opacity:0.5}}/>
+                            <span style={{flex:1}}>{a}</span>
+                            <button onClick={()=>deleteItem(block.key,block.items,i)} style={{background:"none",border:"none",color:"var(--text3)",fontSize:10,cursor:"pointer"}}>x</button>
+                          </div>)}
+                          {editingDay==="add-"+bi?<div style={{display:"flex",gap:4,marginTop:4}}><input placeholder="Activiteit..." value={dayForm.title} onChange={e=>setDayForm({...dayForm,title:e.target.value})} onKeyDown={async e=>{if(e.key==="Enter"&&dayForm.title){await updateArr(block.key,[...block.items,dayForm.title]);setDayForm({...dayForm,title:""});setEditingDay(null)}}} style={{flex:1,fontSize:11,border:"1px solid var(--border)",borderRadius:6,padding:"3px 6px",outline:"none",background:"var(--bg)",color:"var(--text)",fontFamily:"var(--sans)"}}/><button onClick={()=>setEditingDay(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,padding:"2px 6px",color:"var(--text3)",fontSize:10,cursor:"pointer"}}>x</button></div>:<button onClick={()=>{setEditingDay("add-"+bi);setDayForm({...dayForm,title:""})}} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",padding:"3px 0"}}>+ toevoegen</button>}
+                        </div>
+                      </div>
+                    ))})()}
+                </div>
+                <div style={{width:240,flexShrink:0,padding:"14px 16px"}}>
+                  <div style={{fontSize:10,fontWeight:600,color:"var(--text3)",marginBottom:8,textTransform:"uppercase"}}>Verblijf</div>
+                  <div style={{borderRadius:8,overflow:"hidden",border:"1px solid var(--border)",marginBottom:8}}><iframe style={{width:"100%",height:100,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(d.hotel+", Italy")}`}/></div>
+                  <div style={{fontSize:13,fontWeight:600}}>{d.hotel||"Geen hotel"}</div>
+                  <a href={d.hotelUrl||`https://maps.google.com/?q=${encodeURIComponent(d.hotel+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:10,color:"var(--accent)",textDecoration:"none"}}>Open in Maps</a>
+                </div>
+              </div>
+            </div>}
+
             {/* Content columns */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))",gap:12,marginBottom:24}}>
               {/* Cultuur */}
@@ -338,11 +381,21 @@ export default function Page(){
             {/* Selected POI detail */}
             {selPoi&&selPoi.startsWith("s-")&&(()=>{const idx=parseInt(selPoi.split("-")[2]);const spots2=c.spots.filter(p=>!cpois.some(x=>x.cat==="hidden"&&x.name===p.name&&x.city_id===c.id));const p=spots2[idx];if(!p)return null;return <div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--accent)",padding:0,marginBottom:16,boxShadow:"var(--shadow2)",overflow:"hidden"}}>
               <div style={{display:"flex",height:180}}><iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(p.name+", "+c.name+", Italy")}`}/><img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(p.name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={p.name}/></div>
-              <div style={{padding:"12px 14px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:15,fontWeight:600}}>{p.name}</div><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"3px 10px",borderRadius:6}}>Open in Maps</a></div><div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:4}}>{p.tip}</div>}</div>
+              <div style={{padding:"12px 14px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:15,fontWeight:600}}>{p.name}</div><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"3px 10px",borderRadius:6}}>Open in Maps</a></div><div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>{p.desc}</div>{p.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:4}}>{p.tip}</div>}
+                <div style={{display:"flex",gap:6,marginTop:8}}>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"6px",borderRadius:6,fontWeight:600}}>Navigeer</a>
+                  <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:11,color:"var(--text3)",background:"var(--bg3)",border:"none",borderRadius:6,padding:"6px",cursor:"pointer"}}>Sluiten</button>
+                </div>
+              </div>
             </div>})()}
             {selPoi&&selPoi.startsWith("r-")&&(()=>{const idx=parseInt(selPoi.split("-")[2]);const rests=c.restaurants.filter(r=>!cpois.some(x=>x.cat==="hidden"&&x.name===r.name&&x.city_id===c.id));const r=rests[idx];if(!r)return null;return <div style={{background:"var(--bg2)",borderRadius:"var(--r)",border:"1px solid var(--accent)",padding:0,marginBottom:16,boxShadow:"var(--shadow2)",overflow:"hidden"}}>
               <div style={{display:"flex",height:180}}><iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(r.name+", "+c.name+", Italy")}`}/><img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(r.name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={r.name}/></div>
-              <div style={{padding:"12px 14px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:15,fontWeight:600}}>{r.name} <span style={{fontWeight:400,color:"var(--accent)"}}>{r.price}</span></div><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"3px 10px",borderRadius:6}}>Open in Maps</a></div><div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:4}}>{r.tip}</div>}</div>
+              <div style={{padding:"12px 14px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:15,fontWeight:600}}>{r.name} <span style={{fontWeight:400,color:"var(--accent)"}}>{r.price}</span></div><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"3px 10px",borderRadius:6}}>Open in Maps</a></div><div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>{r.type}</div>{r.tip&&<div style={{fontSize:11,color:"var(--accent)",marginTop:4}}>{r.tip}</div>}
+                <div style={{display:"flex",gap:6,marginTop:8}}>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:11,color:"var(--accent)",textDecoration:"none",background:"var(--accent2)",padding:"6px",borderRadius:6,fontWeight:600}}>Navigeer</a>
+                  <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:11,color:"var(--text3)",background:"var(--bg3)",border:"none",borderRadius:6,padding:"6px",cursor:"pointer"}}>Sluiten</button>
+                </div>
+              </div>
             </div>})()}
 
 {/* Stadsinfo */}
