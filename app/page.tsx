@@ -415,16 +415,14 @@ export default function Page(){
                       </div>
                       <button onClick={()=>{const content=noteForm.t?noteForm.c+"\n[IMG]"+noteForm.t:noteForm.c;(async()=>{if(poiNote){await supabase.from("travel_notes").update({content}).eq("id",poiNote.id)}else if(content){await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+name+":"+c.id,content})}await reloadNotes()})();setEditing(null);setNoteForm({t:"",c:""})}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:10,padding:"10px",fontSize:13,cursor:"pointer",fontWeight:600}}>Opslaan</button>
                     </div>}
-                    {!editing&&
-                    <div style={{marginTop:10}}>
+                    {!editing&&<><div style={{marginTop:10}}>
                       <button onClick={()=>{setEditing(editing==="modal-note"?null:"modal-note");setEditDesc("")}} style={{width:"100%",padding:8,borderRadius:8,border:"1px dashed var(--border)",background:editing==="modal-note"?"var(--accent2)":"transparent",color:editing==="modal-note"?"var(--accent)":"var(--text3)",fontSize:12,cursor:"pointer"}}>{editing==="modal-note"?"Annuleer":"+ Beschrijving toevoegen"}</button>
                       {editing==="modal-note"&&<div style={{marginTop:8}}><textarea autoFocus placeholder="Jouw beschrijving, tips, ervaringen..." value={editDesc} onChange={e2=>setEditDesc(e2.target.value)} style={{width:"100%",fontSize:13,border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",outline:"none",background:"var(--bg)",color:"var(--text)",fontFamily:"var(--sans)",minHeight:60,resize:"vertical",boxSizing:"border-box"}}/><button onClick={()=>{if(!editDesc)return;(async()=>{await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+c.id+":"+name,content:editDesc});await reloadNotes()})();setEditing(null)}} style={{marginTop:6,background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,cursor:"pointer",width:"100%"}}>Opslaan</button></div>}
                     </div>
-
                     <div style={{display:"flex",gap:8,marginTop:12}}>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:13,color:"#fff",textDecoration:"none",background:"var(--accent)",padding:"10px",borderRadius:10,fontWeight:600}}>Navigeer</a>
                       <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:13,color:"var(--text2)",background:"var(--bg3)",border:"none",borderRadius:10,padding:"10px",cursor:"pointer",fontWeight:500}}>Sluiten</button>
-                    </div>}
+                    </div></>}
                   </div>
                 </div>
               </div>})()}
