@@ -199,6 +199,7 @@ export default function Page(){
                   </div>
                   <div style={{fontSize:14,fontWeight:600,marginBottom:2}}>{d.title}</div>
                   <div style={{fontSize:11,color:"var(--text3)"}}>{ct?.name||"?"}</div>
+                  {(()=>{const prev2=sbDays.find(x=>x.day_num===d.day_num-1);const prevCt=prev2?C.find(x=>x.id===prev2.city_id):null;const KM2:Record<string,Record<string,{km:number,t:string}>>={ven:{gar:{km:180,t:"2u30"},ver:{km:120,t:"1u30"},tos:{km:260,t:"3u"},apu:{km:350,t:"4u"}},gar:{ver:{km:65,t:"45min"},apu:{km:280,t:"3u30"},tos:{km:200,t:"2u30"},ven:{km:180,t:"2u30"}},ver:{tos:{km:230,t:"2u30"},gar:{km:65,t:"45min"},ven:{km:120,t:"1u30"},apu:{km:200,t:"2u30"}},tos:{nap:{km:470,t:"4u30"},ver:{km:230,t:"2u30"},apu:{km:120,t:"1u30"}},apu:{tos:{km:120,t:"1u30"},ver:{km:200,t:"2u30"},gar:{km:280,t:"3u30"}},nap:{ama:{km:65,t:"1u15"},tos:{km:470,t:"4u30"}},ama:{nap:{km:65,t:"1u15"}}};const dist2=prevCt&&prevCt.id!==d.city_id?KM2[prevCt.id]?.[d.city_id]:null;return dist2?<div style={{fontSize:10,color:"var(--accent)",marginTop:4}}>{dist2.km} km — {dist2.t}</div>:null})()}
                 </button>
               )})}
             </div>
@@ -210,6 +211,9 @@ export default function Page(){
           return(
           <div style={{animation:"fadeUp .3s ease"}}>
             {/* Header - compact */}
+            <button onClick={()=>setSelDay(null)} style={{background:"none",border:"none",color:"var(--accent)",fontSize:12,cursor:"pointer",padding:"0 0 8px",fontFamily:"var(--sans)",display:"flex",alignItems:"center",gap:4}}>
+              <span style={{fontSize:14}}>←</span> Reisplanning
+            </button>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <div>
                 <div style={{fontSize:11,fontWeight:600,color:"var(--accent)"}}>Dag {d.day} / {sbDays.length} — {dayDate(d.day)}</div>
