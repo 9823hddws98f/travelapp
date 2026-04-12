@@ -417,22 +417,20 @@ export default function Page(){
                     </div>}
                     {!editing&&
                     {/* Eigen notitie */}
-                    {(()=>{const nk="poi:"+c.id+":"+name;const pNote=notes.find(n=>n.title===nk);return <div style={{marginTop:10}}>
-                      {pNote?<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",marginBottom:8}}>
-                        <div style={{fontSize:13,color:"var(--text)",whiteSpace:"pre-wrap"}}>{pNote.content}</div>
-                        <div style={{display:"flex",gap:6,marginTop:6}}>
-                          <button onClick={()=>{setEditing("modal-note");setEditDesc(pNote.content)}} style={{fontSize:10,color:"var(--accent)",background:"none",border:"none",cursor:"pointer"}}>Bewerken</button>
-                          <button onClick={()=>{(async()=>{await supabase.from("travel_notes").delete().eq("id",pNote.id);await reloadNotes()})()}} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer"}}>Verwijder</button>
-                        </div>
-                      </div>:null}
-                      {editing==="modal-note"?<div style={{display:"flex",flexDirection:"column",gap:6}}>
-                        <textarea placeholder="Jouw beschrijving, tips, ervaringen..." value={editDesc} onChange={e=>setEditDesc(e.target.value)} style={{width:"100%",fontSize:13,border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",outline:"none",background:"var(--bg)",color:"var(--text)",fontFamily:"var(--sans)",minHeight:60,resize:"vertical"}}/>
-                        <div style={{display:"flex",gap:6}}>
-                          <button onClick={()=>{if(!editDesc)return;(async()=>{const ex=notes.find(n2=>n2.title===nk);if(ex){await supabase.from("travel_notes").update({content:editDesc}).eq("id",ex.id)}else{await supabase.from("travel_notes").insert({city_id:c.id,title:nk,content:editDesc})}await reloadNotes()})();setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
-                          <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
-                        </div>
-                      </div>:(!pNote&&<button onClick={()=>{setEditing("modal-note");setEditDesc("")}} style={{width:"100%",padding:8,borderRadius:8,border:"1px dashed var(--border)",background:"transparent",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>+ Beschrijving toevoegen</button>)}
-                    </div>})()}
+                    {notes.find(n=>n.title==="poi:"+c.id+":"+name)?<div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",marginTop:10}}>
+                      <div style={{fontSize:13,color:"var(--text)",whiteSpace:"pre-wrap"}}>{notes.find(n=>n.title==="poi:"+c.id+":"+name)?.content}</div>
+                      <div style={{display:"flex",gap:6,marginTop:6}}>
+                        <button onClick={()=>{setEditing("modal-note");setEditDesc(notes.find(n=>n.title==="poi:"+c.id+":"+name)?.content||"")}} style={{fontSize:10,color:"var(--accent)",background:"none",border:"none",cursor:"pointer"}}>Bewerken</button>
+                        <button onClick={()=>{const nt2=notes.find(n=>n.title==="poi:"+c.id+":"+name);if(nt2)(async()=>{await supabase.from("travel_notes").delete().eq("id",nt2.id);await reloadNotes()})()}} style={{fontSize:10,color:"var(--text3)",background:"none",border:"none",cursor:"pointer"}}>Verwijder</button>
+                      </div>
+                    </div>:null}
+                    {editing==="modal-note"?<div style={{marginTop:10,display:"flex",flexDirection:"column",gap:6}}>
+                      <textarea placeholder="Jouw beschrijving, tips, ervaringen..." value={editDesc} onChange={e2=>setEditDesc(e2.target.value)} style={{width:"100%",fontSize:13,border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",outline:"none",background:"var(--bg)",color:"var(--text)",fontFamily:"var(--sans)",minHeight:60,resize:"vertical",boxSizing:"border-box"}}/>
+                      <div style={{display:"flex",gap:6}}>
+                        <button onClick={()=>{if(!editDesc)return;(async()=>{const nk2="poi:"+c.id+":"+name;const ex2=notes.find(n2=>n2.title===nk2);if(ex2){await supabase.from("travel_notes").update({content:editDesc}).eq("id",ex2.id)}else{await supabase.from("travel_notes").insert({city_id:c.id,title:nk2,content:editDesc})}await reloadNotes()})();setEditing(null)}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:8,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>Opslaan</button>
+                        <button onClick={()=>setEditing(null)} style={{background:"none",border:"1px solid var(--border)",borderRadius:8,padding:"6px 12px",color:"var(--text3)",fontSize:12,cursor:"pointer"}}>Annuleer</button>
+                      </div>
+                    </div>:(!notes.find(n=>n.title==="poi:"+c.id+":"+name)&&editing!=="modal-note"?<button onClick={()=>{setEditing("modal-note");setEditDesc("")}} style={{width:"100%",padding:8,borderRadius:8,border:"1px dashed var(--border)",background:"transparent",color:"var(--text3)",fontSize:12,cursor:"pointer",marginTop:10}}>+ Beschrijving toevoegen</button>:null)}
 
                     <div style={{display:"flex",gap:8,marginTop:12}}>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:13,color:"#fff",textDecoration:"none",background:"var(--accent)",padding:"10px",borderRadius:10,fontWeight:600}}>Navigeer</a>
