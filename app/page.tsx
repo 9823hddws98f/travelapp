@@ -385,20 +385,36 @@ export default function Page(){
               if(type==="s"){const spots2=c.spots.filter(p=>!cpois.some(x=>x.cat==="hidden"&&x.name===p.name&&x.city_id===c.id));const p=spots2[idx];if(!p)return null;name=p.name;desc=p.desc;tip=p.tip||""}
               if(type==="r"){const rests=c.restaurants.filter(r=>!cpois.some(x=>x.cat==="hidden"&&x.name===r.name&&x.city_id===c.id));const r=rests[idx];if(!r)return null;name=r.name;desc=r.type;tip=r.tip||"";price=r.price}
               if(type==="v"){const virs=c.viral.filter(v=>!cpois.some(x=>x.cat==="hidden"&&x.name===v.name&&x.city_id===c.id));const v=virs[idx];if(!v)return null;name=v.name;desc=v.desc;tip=v.tag}
+              const ov=cpois.find(x=>x.cat==="overlay"&&x.name===name&&x.city_id===c.id);
+              const poiNote=notes.find(n=>n.title==="poi:"+name+":"+c.id);
               return <div onClick={()=>setSelPoi(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-                <div onClick={e=>e.stopPropagation()} style={{background:"var(--bg2)",borderRadius:16,maxWidth:480,width:"100%",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}}>
+                <div onClick={e2=>e2.stopPropagation()} style={{background:"var(--bg2)",borderRadius:16,maxWidth:520,width:"100%",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.15)",maxHeight:"90vh",overflowY:"auto"}}>
                   <div style={{display:"flex",height:200}}>
                     <iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(name+", "+c.name+", Italy")}`}/>
-                    <img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={name}/>
+                    {ov?.description&&ov.description.startsWith("data:image")?<img src={ov.description} style={{flex:1,objectFit:"cover",minWidth:0}} alt={name}/>:<img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={name}/>}
                   </div>
                   <div style={{padding:"16px 20px"}}>
-                    <div style={{fontSize:18,fontWeight:700,marginBottom:4}}>{name}{price&&<span style={{fontWeight:400,color:"var(--accent)",fontSize:14,marginLeft:6}}>{price}</span>}</div>
-                    <div style={{fontSize:13,color:"var(--text2)",marginBottom:4}}>{desc}</div>
-                    {tip&&<div style={{fontSize:12,color:"var(--accent)",marginBottom:8}}>{tip}</div>}
-                    <div style={{display:"flex",gap:8,marginTop:12}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <div style={{fontSize:18,fontWeight:700}}>{name}{price&&<span style={{fontWeight:400,color:"var(--accent)",fontSize:14,marginLeft:6}}>{price}</span>}</div>
+                      <button onClick={()=>setEditing(editing===selPoi?null:selPoi)} style={{fontSize:11,color:"var(--accent)",background:"var(--accent2)",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>{editing===selPoi?"Annuleer":"Bewerken"}</button>
+                    </div>
+                    <div style={{fontSize:13,color:"var(--text2)"}}>{desc}</div>
+                    {tip&&<div style={{fontSize:12,color:"var(--accent)",marginTop:4}}>{tip}</div>}
+                    {poiNote&&!editing&&<div style={{marginTop:10,padding:"10px 12px",background:"var(--bg)",borderRadius:8,border:"1px solid var(--border)"}}>
+                      <div style={{fontSize:13,color:"var(--text)",whiteSpace:"pre-wrap"}}>{poiNote.content.includes("[IMG]")?poiNote.content.split("\n[IMG]")[0]:poiNote.content}</div>
+                      {poiNote.content.includes("[IMG]")&&<img src={poiNote.content.split("[IMG]")[1]} style={{width:"100%",maxHeight:150,objectFit:"cover",borderRadius:8,marginTop:6}} alt=""/>}
+                    </div>}
+                    {editing===selPoi&&<div style={{marginTop:10,display:"flex",flexDirection:"column",gap:6}}>
+                      <textarea placeholder="Beschrijving, tips, links..." value={noteForm.c} onChange={e2=>setNoteForm({...noteForm,c:e2.target.value})} style={{...inp,fontSize:13,minHeight:60,resize:"vertical",padding:"8px 10px"}}/>
+                      <div onDragOver={e2=>{e2.preventDefault();e2.currentTarget.style.borderColor="var(--accent)"}} onDragLeave={e2=>{e2.currentTarget.style.borderColor="var(--border)"}} onDrop={e2=>{e2.preventDefault();e2.currentTarget.style.borderColor="var(--border)";const file=e2.dataTransfer.files[0];if(file&&file.type.startsWith("image/")){const reader=new FileReader();reader.onload=ev=>{setNoteForm({...noteForm,t:ev.target?.result as string||""})};reader.readAsDataURL(file)}}} style={{border:"2px dashed var(--border)",borderRadius:10,padding:noteForm.t?"4px":"16px 12px",textAlign:"center",cursor:"pointer",transition:"border-color .2s",background:"var(--bg)"}}>
+                        {noteForm.t?<div style={{position:"relative"}}><img src={noteForm.t} style={{width:"100%",maxHeight:120,objectFit:"cover",borderRadius:8}} alt=""/><button onClick={()=>setNoteForm({...noteForm,t:""})} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.5)",color:"#fff",border:"none",borderRadius:6,padding:"2px 8px",fontSize:11,cursor:"pointer"}}>x</button></div>:<div><div style={{fontSize:12,color:"var(--text3)"}}>Sleep een foto hierin</div><input type="file" accept="image/*" onChange={e2=>{const file=e2.target.files?.[0];if(file){const reader=new FileReader();reader.onload=ev=>{setNoteForm({...noteForm,t:ev.target?.result as string||""})};reader.readAsDataURL(file)}}} style={{fontSize:11,color:"var(--text2)",marginTop:4,width:"100%"}}/></div>}
+                      </div>
+                      <button onClick={()=>{const content=noteForm.t?noteForm.c+"\n[IMG]"+noteForm.t:noteForm.c;(async()=>{if(poiNote){await supabase.from("travel_notes").update({content}).eq("id",poiNote.id)}else if(content){await supabase.from("travel_notes").insert({city_id:c.id,title:"poi:"+name+":"+c.id,content})}await reloadNotes()})();setEditing(null);setNoteForm({t:"",c:""})}} style={{background:"var(--accent)",color:"#fff",border:"none",borderRadius:10,padding:"10px",fontSize:13,cursor:"pointer",fontWeight:600}}>Opslaan</button>
+                    </div>}
+                    {!editing&&<div style={{display:"flex",gap:8,marginTop:12}}>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name+", "+c.name+", Italy")}`} target="_blank" rel="noreferrer" style={{flex:1,textAlign:"center",fontSize:13,color:"#fff",textDecoration:"none",background:"var(--accent)",padding:"10px",borderRadius:10,fontWeight:600}}>Navigeer</a>
                       <button onClick={()=>setSelPoi(null)} style={{flex:1,fontSize:13,color:"var(--text2)",background:"var(--bg3)",border:"none",borderRadius:10,padding:"10px",cursor:"pointer",fontWeight:500}}>Sluiten</button>
-                    </div>
+                    </div>}
                   </div>
                 </div>
               </div>})()}
