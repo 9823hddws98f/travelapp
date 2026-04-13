@@ -157,7 +157,7 @@ export default function Page(){
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:11,fontWeight:700,color:"var(--text)"}}>{dayDate(dy.day_num)} <span style={{fontWeight:400,color:"var(--text3)",fontSize:10}}>{hNote&&JSON.parse(hNote.content).loc?JSON.parse(hNote.content).loc:ct2?.name||""}</span></div>
                 </div>
-                {dy.hotel?<a href={dy.hotel_url||"https://maps.google.com/?q="+encodeURIComponent(dy.hotel+", Italy")} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0}}>Maps</a>:null}
+                {dy.hotel?<a href={"https://maps.google.com/?q="+encodeURIComponent(dy.hotel+", Italy")} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:9,color:"var(--text3)",textDecoration:"none",flexShrink:0,opacity:0.6}}>Maps</a>:null}
               </div>
               {editingDay==="sh-"+dy.id?<div style={{marginTop:6,display:"flex",flexDirection:"column",gap:4}}>
                 <input autoFocus value={dayForm.hotel} onChange={e=>setDayForm({...dayForm,hotel:e.target.value})} placeholder="Hotelnaam of adres..." style={{fontSize:11,border:"1px solid var(--accent)",borderRadius:6,padding:"5px 8px",outline:"none",background:"var(--bg)",color:"var(--text)",fontFamily:"var(--sans)",width:"100%"}}/>
