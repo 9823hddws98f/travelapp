@@ -693,7 +693,7 @@ export default function Page(){
           {todos.length===0&&!addTd&&<p style={{fontSize:13,color:"var(--text3)",textAlign:"center",padding:40,fontStyle:"italic"}}>Nog geen items.</p>}
         </div>)}
 
-        <footer style={{textAlign:"center",padding:"24px 0 12px",fontSize:12,color:"var(--text3)",fontFamily:"var(--sans)",fontWeight:700,fontStyle:"italic"}}>Buon viaggio, Tein Tein & Tessa — v71 Tessa — v72</footer>
+        <footer style={{textAlign:"center",padding:"24px 0 12px",fontSize:12,color:"var(--text3)",fontFamily:"var(--sans)",fontWeight:700,fontStyle:"italic"}}>Buon viaggio, Tein & Tessa — v77</footer>
       </main>
     </div>
   );
