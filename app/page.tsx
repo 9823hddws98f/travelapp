@@ -337,12 +337,7 @@ export default function Page(){
                       </div>
                     ))})()}
                 </div>
-                <div style={{width:240,flexShrink:0,padding:"14px 16px"}}>
-                  <div style={{fontSize:10,fontWeight:600,color:"var(--text3)",marginBottom:8,textTransform:"uppercase"}}>Verblijf</div>
-                  <div style={{borderRadius:8,overflow:"hidden",border:"1px solid var(--border)",marginBottom:8}}><iframe style={{width:"100%",height:100,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(d.hotel+", Italy")}`}/></div>
-                  <div style={{fontSize:13,fontWeight:600}}>{d.hotel||"Geen hotel"}</div>
-                  <a href={d.hotelUrl||`https://maps.google.com/?q=${encodeURIComponent(d.hotel+", Italy")}`} target="_blank" rel="noreferrer" style={{fontSize:10,color:"var(--accent)",textDecoration:"none"}}>Open in Maps</a>
-                </div>
+
               </div>
             </div>}
 
