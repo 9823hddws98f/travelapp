@@ -392,18 +392,15 @@ export default function Page(){
               const ov=cpois.find(x=>x.cat==="overlay"&&x.name===name&&x.city_id===c.id);
               const poiNote=notes.find(n=>n.title==="poi:"+name+":"+c.id);
               return <div onClick={()=>setSelPoi(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-                <div onClick={e2=>e2.stopPropagation()} style={{background:"var(--bg2)",borderRadius:16,maxWidth:520,width:"100%",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.15)",maxHeight:"90vh",overflowY:"auto"}}>
-                  <div style={{display:"flex",height:200}}>
-                    <iframe style={{flex:1,border:"none",display:"block",minWidth:0}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(name+", "+c.name+", Italy")}`}/>
-                    {ov?.description&&ov.description.startsWith("data:image")?<img src={ov.description} style={{flex:1,objectFit:"cover",minWidth:0}} alt={name}/>:<img src={`https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(name+", "+c.name+", Italy")}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`} style={{flex:1,objectFit:"cover",minWidth:0}} alt={name}/>}
-                  </div>
+                <div onClick={e2=>e2.stopPropagation()} style={{background:"var(--bg2)",borderRadius:16,maxWidth:480,width:"100%",overflow:"hidden",boxShadow:"0 20px 60px rgba(0,0,0,0.15)",maxHeight:"90vh",overflowY:"auto"}}>
+                  <iframe style={{width:"100%",height:220,border:"none",display:"block"}} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(name+", "+c.name+", Italy")}`}/>
                   <div style={{padding:"16px 20px"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                       <div style={{fontSize:18,fontWeight:700}}>{name}{price&&<span style={{fontWeight:400,color:"var(--accent)",fontSize:14,marginLeft:6}}>{price}</span>}</div>
                       <button onClick={()=>setEditing(editing===selPoi?null:selPoi)} style={{fontSize:11,color:"var(--accent)",background:"var(--accent2)",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>{editing===selPoi?"Annuleer":"Bewerken"}</button>
                     </div>
-                    <div style={{fontSize:13,color:"var(--text2)"}}>{desc}</div>
-                    {tip&&<div style={{fontSize:12,color:"var(--accent)",marginTop:4}}>{tip}</div>}
+                    <div style={{fontSize:14,color:"var(--text)",lineHeight:1.5,marginTop:6}}>{desc}</div>
+                    {tip&&<div style={{fontSize:13,color:"var(--text2)",marginTop:10,padding:"10px 12px",background:"var(--bg)",borderRadius:8,border:"1px solid var(--border)",lineHeight:1.5}}><span style={{fontWeight:600,color:"var(--accent)",marginRight:4}}>Tip:</span>{tip}</div>}
                     {(()=>{const item=type==="s"?c.spots.filter(p2=>!cpois.some(x=>x.cat==="hidden"&&x.name===p2.name&&x.city_id===c.id))[idx]:type==="r"?c.restaurants.filter(r2=>!cpois.some(x=>x.cat==="hidden"&&x.name===r2.name&&x.city_id===c.id))[idx]:c.viral.filter(v2=>!cpois.some(x=>x.cat==="hidden"&&x.name===v2.name&&x.city_id===c.id))[idx];return item?.link?<a href={item.link} target="_blank" rel="noreferrer" style={{display:"block",fontSize:12,color:"var(--accent)",textDecoration:"none",marginTop:6,padding:"6px 10px",background:"var(--accent2)",borderRadius:8,textAlign:"center"}}>{"Bekijk op "+(item.link.includes("tiktok")?"TikTok":item.link.includes("instagram")?"Instagram":item.link.includes("tripadvisor")?"TripAdvisor":"Website")+" ↗"}</a>:null})()}
                     {poiNote&&!editing&&<div style={{marginTop:10,padding:"10px 12px",background:"var(--bg)",borderRadius:8,border:"1px solid var(--border)"}}>
                       <div style={{fontSize:13,color:"var(--text)",whiteSpace:"pre-wrap"}}>{poiNote.content.includes("[IMG]")?poiNote.content.split("\n[IMG]")[0]:poiNote.content}</div>
