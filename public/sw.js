@@ -1,4 +1,4 @@
-const CACHE = "italia-v70";
+const CACHE = "italia-v72";
 const URLS = ["/"];
 self.addEventListener("install", e => {
   self.skipWaiting();
